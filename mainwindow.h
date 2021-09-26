@@ -17,11 +17,9 @@ public:
     ~MainWindow();
 //    bool isValid();
 private slots:
-//    void dataChanged();
+    void barAmountValueChanged();
 //    void validate();
 //    void draw();
-//    void goToProcessor();
-//    void goToPostprocessor();
 //    void saveProjectFile();
 //    void saveAs();
 //    void open();
@@ -32,7 +30,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QString currentFile;
-    QGraphicsScene preprocessorScene;
+    int barsAmount;
+    QGraphicsScene graphicScene;
 
 };
 #endif // MAINWINDOW_H
