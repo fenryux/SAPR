@@ -276,6 +276,19 @@
      <string>Параметры масштаба</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="clearBarTablePushButton">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>40</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>C</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

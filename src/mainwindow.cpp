@@ -1,6 +1,8 @@
 #include <QGraphicsView>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
@@ -50,6 +52,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
     connect(ui->barAmountSpinBox, &QSpinBox::valueChanged, this, &MainWindow::barAmountValueChanged);
+    connect(ui->barTableWidget, &QTableWidget::itemChanged, this, &MainWindow::barTableCellValueChanged);
+    connect(ui->forceFTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
+    connect(ui->forceQTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
 }
 
 MainWindow::~MainWindow()
@@ -96,6 +101,30 @@ void MainWindow::barAmountValueChanged(){
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
     }
+}
+// це костыль
+void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
+    QString cellValue = item->text();
+
+    ui->barTableWidget->blockSignals(true);
+    if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
+        item->setBackground(QBrush(Qt::red));
+    }
+    else
+        item->setBackground(QBrush(Qt::white));
+    ui->barTableWidget->blockSignals(false);
+}
+
+void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
+    QString cellValue = item->text();
+
+    item->tableWidget()->blockSignals(true);
+    if(item->text().toDouble() == 0){
+        item->setBackground(QBrush(Qt::red));
+    }
+    else
+        item->setBackground(QBrush(Qt::white));
+    item->tableWidget()->blockSignals(false);
 }
 
 void MainWindow::about(){

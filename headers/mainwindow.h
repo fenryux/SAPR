@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QTableWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,6 +19,8 @@ public:
 //    bool isValid();
 private slots:
     void barAmountValueChanged();
+    void barTableCellValueChanged(QTableWidgetItem *item);
+    void forceTableCellValueChanged(QTableWidgetItem *item);
 //    void validate();
 //    void draw();
 //    void saveProjectFile();
