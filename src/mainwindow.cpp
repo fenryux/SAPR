@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
     ui->barTableWidget->setRowCount(barsAmount);
-    ui->barTableWidget->setHorizontalHeaderLabels(QStringList() << "L" << "A" << "[σ]" << "E");
+    ui->barTableWidget->setHorizontalHeaderLabels(QStringList() << "L, м" << "A, м^2" << "[σ], кН" << "E, МПа");
     for(int i = 0; i < ui->barTableWidget->columnCount(); i++)
         ui->barTableWidget->setColumnWidth(i,62);
 
@@ -65,10 +65,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::barAmountValueChanged(){
     barsAmount = ui->barAmountSpinBox->value();
-    if(barsAmount > 8){ // 8 - максимальное кол-во стержней (так захотелось)
-        barsAmount = 8;
-        ui->barAmountSpinBox->setValue(barsAmount);
-    }
+//    if(barsAmount > 8){ // 8 - максимальное кол-во стержней (так захотелось)
+//        barsAmount = 8;
+//        ui->barAmountSpinBox->setValue(barsAmount);
+//    }
     if(barsAmount > ui->barTableWidget->rowCount()){
         int previousValue = ui->barTableWidget->rowCount();
 
@@ -104,7 +104,7 @@ void MainWindow::barAmountValueChanged(){
 }
 // це костыль
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
-    QString cellValue = item->text();
+//    QString cellValue = item->text();
 
     ui->barTableWidget->blockSignals(true);
     if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
@@ -116,7 +116,7 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
 }
 
 void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
-    QString cellValue = item->text();
+//    QString cellValue = item->text();
 
     item->tableWidget()->blockSignals(true);
     if(item->text().toDouble() == 0){
