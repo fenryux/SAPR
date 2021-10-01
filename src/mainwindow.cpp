@@ -154,6 +154,7 @@ bool MainWindow::isValid(const QList<QTableWidgetItem *> barData){
         if(i->background() == QBrush(Qt::red) || i->text() == "")
             return false;
     }
+    bars.append(barData);
     return true;
 }
 

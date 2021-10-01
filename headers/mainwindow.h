@@ -38,6 +38,7 @@ private:
 
     QGraphicsScene* graphicScene;
     QGraphicsLineItem* lineItem;
+    QList<const QList<QTableWidgetItem*>> bars;
 
 };
 #endif // MAINWINDOW_H
