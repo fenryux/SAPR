@@ -2,8 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QGraphicsScene>
-#include <QTableWidgetItem>
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,13 +15,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-//    bool isValid();
 private slots:
     void barAmountValueChanged();
     void barTableCellValueChanged(QTableWidgetItem *item);
     void forceTableCellValueChanged(QTableWidgetItem *item);
-//    void validate();
-//    void draw();
+    void clearBarData();
+    void draw(const QList<QTableWidgetItem *> barData);
 //    void saveProjectFile();
 //    void saveAs();
 //    void open();
@@ -31,10 +29,15 @@ private slots:
 
 
 private:
+    bool isValid(const QList<QTableWidgetItem *> barData);
+
     Ui::MainWindow *ui;
     QString currentFile;
+
     int barsAmount;
+
     QGraphicsScene* graphicScene;
+    QGraphicsLineItem* lineItem;
 
 };
 #endif // MAINWINDOW_H
