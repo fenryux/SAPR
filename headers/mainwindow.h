@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+#include "headers/bargraphicitem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -29,7 +30,7 @@ private slots:
 
 
 private:
-    bool isValid(const QList<QTableWidgetItem *> barData);
+    bool isValid(QList<QTableWidgetItem *> barData);
 
     Ui::MainWindow *ui;
     QString currentFile;
@@ -37,8 +38,10 @@ private:
     int barsAmount;
 
     QGraphicsScene* graphicScene;
+    QList<BarGraphicItem> barGraphicList;
     QGraphicsLineItem* lineItem;
-    QList<const QList<QTableWidgetItem*>> bars;
+
+    QList<QList<QTableWidgetItem*>> barsList;
 
 };
 #endif // MAINWINDOW_H

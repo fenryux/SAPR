@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     graphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
 
-    barsAmount = 1;
+    barsAmount = 0;
     ui->barAmountSpinBox->setValue(barsAmount);
 
     ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
@@ -22,29 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->forceFTableWidget->setRowCount(barsAmount+1);
     ui->forceQTableWidget->setRowCount(barsAmount);
-
-    for(int i = 0; i < ui->barTableWidget->rowCount(); i++){
-        ui->barTableWidget->setRowHeight(i, 5);
-        for(int j = 0; j < ui->barTableWidget->columnCount();j++){
-            QTableWidgetItem *item = new QTableWidgetItem("");
-            item->setTextAlignment(Qt::AlignCenter);
-            ui->barTableWidget->setItem(i,j, item);
-        }
-    }
-
-    for(int i = 0; i < ui->forceFTableWidget->rowCount(); i++){
-        ui->forceFTableWidget->setRowHeight(i, 5);
-        QTableWidgetItem *item = new QTableWidgetItem("");
-        item->setTextAlignment(Qt::AlignCenter);
-        ui->forceFTableWidget->setItem(i,1, item);
-    }
-
-    for(int i = 0; i < ui->forceQTableWidget->rowCount(); i++){
-        ui->forceQTableWidget->setRowHeight(i, 5);
-        QTableWidgetItem *item = new QTableWidgetItem("");
-        item->setTextAlignment(Qt::AlignCenter);
-        ui->forceQTableWidget->setItem(i,1, item);
-    }
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
@@ -74,11 +51,12 @@ void MainWindow::barAmountValueChanged(){
         ui->barTableWidget->setRowCount(barsAmount);
         for(int i = previousValue; i < barsAmount; i++)
             for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
-                QTableWidgetItem *item = new QTableWidgetItem("");
+                QTableWidgetItem *item = new QTableWidgetItem("1");
                 item->setTextAlignment(Qt::AlignCenter);
                 ui->barTableWidget->setItem(previousValue, j, item);
             }
 
+        barsList.resize(barsAmount);
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount+1);
 
@@ -94,25 +72,26 @@ void MainWindow::barAmountValueChanged(){
             ui->forceQTableWidget->setItem(i, 1, item);
         }
     }
-    else if (barsAmount < 1){ // 1 - минимальное кол-во стержней (а что -1 стержень может быть конструкцией?)
-        barsAmount = 1;
+    else if (barsAmount < 0){ // 1 - минимальное кол-во стержней (а что -1 стержень может быть конструкцией?)
+        barsAmount = 0;
         ui->barAmountSpinBox->setValue(barsAmount);
     }
     else{
         ui->barTableWidget->setRowCount(barsAmount);
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
+        barsList.resize(barsAmount);
     }
     ui->barTableWidget->blockSignals(false);
-    ui->forceFTableWidget->blockSignals(true);
-    ui->forceQTableWidget->blockSignals(true);
+    ui->forceFTableWidget->blockSignals(false);
+    ui->forceQTableWidget->blockSignals(false);
 }
 
 void MainWindow::clearBarData(){
     ui->barTableWidget->blockSignals(true);
     for(int i = 0; i < ui->barTableWidget->rowCount(); i++)
         for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
-            ui->barTableWidget->item(i,j)->setText("");
+            ui->barTableWidget->item(i,j)->setText("1");
             ui->barTableWidget->item(i,j)->setBackground(QBrush(Qt::white));
         }
     ui->barTableWidget->blockSignals(false);
@@ -133,8 +112,11 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
     for(int i = 0; i < 4; i++)
         barData.append(ui->barTableWidget->item(item->row(), i));
 
-    if(isValid(barData))
+    if(isValid(barData)){
+        if(!barsList.contains(barData))
+            barsList.replace(barData.at(0)->row(), barData);
         draw(barData);
+    }
 }
 
 void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
@@ -149,22 +131,33 @@ void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
     item->tableWidget()->blockSignals(false);
 }
 
-bool MainWindow::isValid(const QList<QTableWidgetItem *> barData){
+bool MainWindow::isValid(QList<QTableWidgetItem *> barData){
     for(auto i: barData){
         if(i->background() == QBrush(Qt::red) || i->text() == "")
             return false;
     }
-    bars.append(barData);
     return true;
 }
 
 void MainWindow::draw(const QList<QTableWidgetItem *> barData){
-    QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barData.at(0)->text().toDouble()*25,
-                                                        barData.at(1)->text().toDouble()*25, QPen(Qt::black, 5));
-    lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000,
-                                     rectItem->rect().center().ry(), QPen(Qt::DashDotLine));
-    lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
+    if(barGraphicList.isEmpty()){
+        QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barData.at(0)->text().toDouble()*50,
+                                                            barData.at(1)->text().toDouble()*25, QPen(Qt::black, 5));
+        lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000,
+                                         rectItem->rect().center().ry(), QPen(Qt::DashDotLine));
+        lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
+        barGraphicList.append(BarGraphicItem(rectItem, barData.at(0)->text().toDouble(),
+                                             barData.at(1)->text().toDouble()));
+    }
+    else{
+        double x = barsList.at(barsList.indexOf(barData) - 1).at(0)->text().toDouble() * 50;
+        double y = barsList.at(barsList.indexOf(barData) - 1).at(1)->text().toDouble() * 25;
 
+        QGraphicsRectItem* rectItem = graphicScene->addRect(x,y,barData.at(0)->text().toDouble()*50,
+                                                            barData.at(1)->text().toDouble()*25, QPen(Qt::black, 5));
+        barGraphicList.append(BarGraphicItem(rectItem, barData.at(0)->text().toDouble(),
+                                             barData.at(1)->text().toDouble()));
+    }
 }
 
 void MainWindow::about(){
