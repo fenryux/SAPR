@@ -139,8 +139,10 @@ void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
 
 bool MainWindow::isRowValid(QList<QTableWidgetItem *> barData){
     for(auto i: barData){
-        if(i->background() == QBrush(Qt::red) || i->text() == "")
+        if(i->background() == QBrush(Qt::red) || i->text() == ""){
+            graphicScene->clear();
             return false;
+        }
     }
     return true;
 }
@@ -164,7 +166,7 @@ void MainWindow::draw(){
                                                         barsList.at(0).at(1)->text().toDouble()*25, QPen(Qt::black,5));
     rects.append(rectItem);
 
-    lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000, rectItem->rect().center().ry(),QPen(Qt::DashDotLine));
+    QGraphicsLineItem* lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000, rectItem->rect().center().ry(),QPen(Qt::DashDotLine));
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
     if(barsList.begin()+1 != barsList.end())
     for(auto i = barsList.begin()+1; i < barsList.end(); i++){
