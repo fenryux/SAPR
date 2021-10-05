@@ -9,6 +9,7 @@ public:
     BarGraphicItem(QGraphicsRectItem *rectItem, const double& L, const double& A):
         _rectItem(rectItem), _L(L), _A(A)
     {};
+    BarGraphicItem(){};
     void setRectItem(QGraphicsRectItem* item);
     void setL(const double& value);
     void setA(const double& value);

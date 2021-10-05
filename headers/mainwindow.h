@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-#include "headers/bargraphicitem.h"
+//#include "headers/bargraphicitem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,7 +21,7 @@ private slots:
     void barTableCellValueChanged(QTableWidgetItem *item);
     void forceTableCellValueChanged(QTableWidgetItem *item);
     void clearBarData();
-    void draw(const QList<QTableWidgetItem *> barData);
+    void draw();
 //    void saveProjectFile();
 //    void saveAs();
 //    void open();
@@ -30,7 +30,8 @@ private slots:
 
 
 private:
-    bool isValid(QList<QTableWidgetItem *> barData);
+    bool isRowValid(QList<QTableWidgetItem *> barData);
+    bool isTableValid();
 
     Ui::MainWindow *ui;
     QString currentFile;
@@ -38,7 +39,7 @@ private:
     int barsAmount;
 
     QGraphicsScene* graphicScene;
-    QList<BarGraphicItem> barGraphicList;
+//    QList<BarGraphicItem> barGraphicList;
     QGraphicsLineItem* lineItem;
 
     QList<QList<QTableWidgetItem*>> barsList;
