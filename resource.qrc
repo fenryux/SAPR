@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/resources">
+        <file>images/zoomPlusIcon.png</file>
+        <file>images/zoomMinusIcon.png</file>
+        <file>images/vertexPlusForce.png</file>
+        <file>images/vertexMinusForce.png</file>
+        <file>images/tableIcon.png</file>
+        <file>images/saveIcon.png</file>
+        <file>images/rightSupport.png</file>
+        <file>images/removeIcon.png</file>
+        <file>images/newIcon.png</file>
+        <file>images/longPlusForce.png</file>
+        <file>images/longMinusForce.png</file>
+        <file>images/leftSupport.png</file>
+        <file>images/calculateIcon.png</file>
+        <file>images/addIcon.png</file>
+    </qresource>
+</RCC>
