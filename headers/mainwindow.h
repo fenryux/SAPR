@@ -39,6 +39,8 @@ private:
     int barsAmount;
 
     QGraphicsScene* graphicScene;
+//    QList<BarGraphicItem> barGraphicList;
+    QGraphicsLineItem* lineItem;
 
     QList<QList<QTableWidgetItem*>> barsList;
 
