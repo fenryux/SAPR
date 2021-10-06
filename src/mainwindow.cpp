@@ -17,8 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
     ui->barTableWidget->setRowCount(barsAmount);
     ui->barTableWidget->setHorizontalHeaderLabels(QStringList() << "L, м" << "A, м^2" << "[σ], кН" << "E, МПа");
-    for(int i = 0; i < ui->barTableWidget->columnCount(); i++)
-        ui->barTableWidget->setColumnWidth(i,62);
+    ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     ui->forceFTableWidget->setRowCount(barsAmount+1);
     ui->forceQTableWidget->setRowCount(barsAmount);
@@ -58,7 +57,6 @@ void MainWindow::barAmountValueChanged(){
             }
 
         barsList.resize(barsAmount);
-//        barGraphicList.reserve(barsAmount);
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount+1);
 
@@ -76,7 +74,7 @@ void MainWindow::barAmountValueChanged(){
             ui->forceQTableWidget->setItem(i, 1, item);
         }
     }
-    else if (barsAmount < 0){ // 1 - минимальное кол-во стержней (а что -1 стержень может быть конструкцией?)
+    else if (barsAmount < 0){
         barsAmount = 0;
         ui->barAmountSpinBox->setValue(barsAmount);
     }
@@ -85,7 +83,6 @@ void MainWindow::barAmountValueChanged(){
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
         barsList.resize(barsAmount);
-//        barGraphicList.resize(barsAmount);
     }
     ui->barTableWidget->blockSignals(false);
     ui->forceFTableWidget->blockSignals(false);
@@ -99,12 +96,11 @@ void MainWindow::clearBarData(){
             ui->barTableWidget->item(i,j)->setText("");
             ui->barTableWidget->item(i,j)->setBackground(QBrush(Qt::red));
         }
+    graphicScene->clear();
     ui->barTableWidget->blockSignals(false);
 }
 // це костыль
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
-//    QString cellValue = item->text();
-
     ui->barTableWidget->blockSignals(true);
     if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
         item->setBackground(QBrush(Qt::red));
@@ -126,8 +122,6 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
 }
 
 void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
-//    QString cellValue = item->text();
-
     item->tableWidget()->blockSignals(true);
     if(item->text().toDouble() == 0){
         item->setBackground(QBrush(Qt::red));
@@ -160,6 +154,8 @@ bool MainWindow::isTableValid(){
 
 void MainWindow::draw(){
     QList<QGraphicsRectItem*> rects;
+//    QGraphicsPixmapItem* leftSupport;
+//    QGraphicsPixmapItem* rightSupport;
     graphicScene->clear();
 
     QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*50,
