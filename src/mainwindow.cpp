@@ -8,8 +8,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QAction *actionAbout = ui->menubar->addAction("About");
+
     graphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
+    leftSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/leftSupport.png"));
+    rightSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/rightSupport.png"));
+    leftSupport->hide();
+    rightSupport->hide();
 
     barsAmount = 0;
     ui->barAmountSpinBox->setValue(barsAmount);
@@ -17,8 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
     ui->barTableWidget->setRowCount(barsAmount);
     ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->forceFTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->forceQTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    ui->forceFTableWidget->setRowCount(barsAmount+1);
+    ui->forceFTableWidget->setRowCount(barsAmount);
     ui->forceQTableWidget->setRowCount(barsAmount);
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
@@ -28,12 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->forceFTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
     connect(ui->forceQTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
     connect(ui->clearBarTablePushButton, &QPushButton::pressed, this, &MainWindow::clearBarData);
+    connect(ui->sealingLeftCheckBox, &QCheckBox::stateChanged, this, &MainWindow::leftSupportValueChanged);
+    connect(ui->sealingRightCheckBox, &QCheckBox::stateChanged, this, &MainWindow::rightSupportValueChanged);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete graphicScene;
+    delete leftSupport;
+    delete rightSupport;
 }
 
 void MainWindow::barAmountValueChanged(){
@@ -57,20 +68,20 @@ void MainWindow::barAmountValueChanged(){
 
         barsList.resize(barsAmount);
         ui->forceQTableWidget->setRowCount(barsAmount);
-        ui->forceFTableWidget->setRowCount(barsAmount+1);
+        ui->forceFTableWidget->setRowCount(barsAmount + 1);
 
-        for(int i = previousValue; i < barsAmount + 1; i++){
+        for(int i = previousValue; i < ui->forceFTableWidget->rowCount(); i++){
             QTableWidgetItem *item = new QTableWidgetItem;
             item->setTextAlignment(Qt::AlignCenter);
             item->setBackground(QBrush(Qt::red));
-            ui->forceFTableWidget->setItem(i, 1, item);
+            ui->forceFTableWidget->setItem(i, 0, item);
         }
 
         for(int i = previousValue; i < barsAmount; i++){
             QTableWidgetItem *item = new QTableWidgetItem;
             item->setTextAlignment(Qt::AlignCenter);
             item->setBackground(QBrush(Qt::red));
-            ui->forceQTableWidget->setItem(i, 1, item);
+            ui->forceQTableWidget->setItem(i, 0, item);
         }
     }
     else if (barsAmount < 0){
@@ -98,7 +109,7 @@ void MainWindow::clearBarData(){
     graphicScene->clear();
     ui->barTableWidget->blockSignals(false);
 }
-
+// ^[0-9]+$ вот тебе регекс нормальный, клоун
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
     ui->barTableWidget->blockSignals(true);
     if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
@@ -142,7 +153,7 @@ bool MainWindow::isTableValid(){
     for(int i = 0; i < ui->barTableWidget->rowCount(); i++){
         for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
 //            qDebug() << ui->barTableWidget->item(i,j)->text() << ' ' << ui->barTableWidget->item(i,j)->text().toDouble();
-            if(ui->barTableWidget->item(i,j)->text().toDouble() == 0)
+            if(ui->barTableWidget->item(i,j)->background().color() == Qt::red)
                 return false;
         }
     }
@@ -153,7 +164,9 @@ void MainWindow::draw(){
     graphicScene->clear();
 
     QList<QGraphicsRectItem*> rects;
-    QGraphicsPixmapItem* leftSupport = graphicScene->addPixmap(QPixmap(":/resources/images/leftSupport.png"));
+    graphicScene->addItem(leftSupport);
+    graphicScene->addItem(rightSupport);
+
 
     QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*50,
                                                         barsList.at(0).at(1)->text().toDouble()*25, QPen(Qt::black,5));
@@ -163,19 +176,34 @@ void MainWindow::draw(){
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
 
     leftSupport->setPos((0 - leftSupport->pixmap().width()),
-                        ((leftSupport->pixmap().height() - rectItem->rect().topLeft().y()*25)/(-2)));
+                        (-leftSupport->pixmap().height()/2 - lineItem->y()));
 
     if(barsList.begin()+1 != barsList.end())
     for(auto i = barsList.begin()+1; i < barsList.end(); i++){
         double x = rects.at(rects.size()-1)->rect().topRight().rx();
-//        auto tmp = (i-1)->at(1)->text().toDouble();
         double dy = ((*i).at(1)->text().toDouble() - (i-1)->at(1)->text().toDouble())*25/2;
         double y = rects.at(rects.size()-1)->rect().topRight().ry() - dy;
+
         QGraphicsRectItem* rectItem = graphicScene->addRect(x,y,(*i).at(0)->text().toDouble()*50,
                                                             (*i).at(1)->text().toDouble()*25, QPen(Qt::black,5));
         rects.append(rectItem);
     }
-//    /*QGraphicsPixmapItem* rightSupport = */graphicScene->addPixmap(QPixmap(":/resources/images/rightSupport.png"));
+}
+
+void MainWindow::leftSupportValueChanged(const int& state){
+    if(barsAmount == 0 || !isTableValid())
+        return;
+    if(state != 2)
+        leftSupport->hide();
+    else leftSupport->show();
+}
+
+void MainWindow::rightSupportValueChanged(const int& state){
+    if(barsAmount == 0 || !isTableValid())
+        return;
+    if(state != 2)
+        rightSupport->hide();
+    else rightSupport->show();
 }
 
 void MainWindow::about(){

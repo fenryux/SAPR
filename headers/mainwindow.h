@@ -20,6 +20,8 @@ private slots:
     void barAmountValueChanged();
     void barTableCellValueChanged(QTableWidgetItem *item);
     void forceTableCellValueChanged(QTableWidgetItem *item);
+    void leftSupportValueChanged(const int& state);
+    void rightSupportValueChanged(const int& state);
     void clearBarData();
     void draw();
 //    void saveProjectFile();
@@ -39,8 +41,9 @@ private:
     int barsAmount;
 
     QGraphicsScene* graphicScene;
-//    QList<BarGraphicItem> barGraphicList;
     QGraphicsLineItem* lineItem;
+    QGraphicsPixmapItem* leftSupport;
+    QGraphicsPixmapItem* rightSupport;
 
     QList<QList<QTableWidgetItem*>> barsList;
 
