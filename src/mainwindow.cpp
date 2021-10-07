@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
     ui->barTableWidget->setRowCount(barsAmount);
-    ui->barTableWidget->setHorizontalHeaderLabels(QStringList() << "L, м" << "A, м^2" << "[σ], кН" << "E, МПа");
     ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     ui->forceFTableWidget->setRowCount(barsAmount+1);
@@ -99,7 +98,7 @@ void MainWindow::clearBarData(){
     graphicScene->clear();
     ui->barTableWidget->blockSignals(false);
 }
-// це костыль
+
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
     ui->barTableWidget->blockSignals(true);
     if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
@@ -116,7 +115,7 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
     if(isRowValid(barData)){
         if(!barsList.contains(barData))
             barsList.replace(barData.at(0)->row(), barData);
-        if(isTableValid())
+        if(isTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
             draw();
     }
 }
@@ -149,12 +148,12 @@ bool MainWindow::isTableValid(){
     }
     return true;
 }
-
+// P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях валидны
 void MainWindow::draw(){
-    QList<QGraphicsRectItem*> rects;
-//    QGraphicsPixmapItem* leftSupport;
-//    QGraphicsPixmapItem* rightSupport;
     graphicScene->clear();
+
+    QList<QGraphicsRectItem*> rects;
+    QGraphicsPixmapItem* leftSupport = graphicScene->addPixmap(QPixmap(":/resources/images/leftSupport.png"));
 
     QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*50,
                                                         barsList.at(0).at(1)->text().toDouble()*25, QPen(Qt::black,5));
@@ -162,6 +161,10 @@ void MainWindow::draw(){
 
     lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000, rectItem->rect().center().ry(),QPen(Qt::DashDotLine));
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
+
+    leftSupport->setPos((0 - leftSupport->pixmap().width()),
+                        ((leftSupport->pixmap().height() - rectItem->rect().topLeft().y()*25)/(-2)));
+
     if(barsList.begin()+1 != barsList.end())
     for(auto i = barsList.begin()+1; i < barsList.end(); i++){
         double x = rects.at(rects.size()-1)->rect().topRight().rx();
@@ -172,6 +175,7 @@ void MainWindow::draw(){
                                                             (*i).at(1)->text().toDouble()*25, QPen(Qt::black,5));
         rects.append(rectItem);
     }
+//    /*QGraphicsPixmapItem* rightSupport = */graphicScene->addPixmap(QPixmap(":/resources/images/rightSupport.png"));
 }
 
 void MainWindow::about(){
