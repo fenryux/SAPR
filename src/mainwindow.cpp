@@ -1,6 +1,9 @@
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -11,10 +14,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     graphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
-    leftSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/leftSupport.png"));
-    rightSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/rightSupport.png"));
-    leftSupport->hide();
-    rightSupport->hide();
+//    leftSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/leftSupport.png"));
+//    rightSupport = new QGraphicsPixmapItem(QPixmap(":/resources/images/rightSupport.png"));
+//    leftSupport->hide();
+//    rightSupport->hide();
 
     barsAmount = 0;
     ui->barAmountSpinBox->setValue(barsAmount);
@@ -109,14 +112,16 @@ void MainWindow::clearBarData(){
     graphicScene->clear();
     ui->barTableWidget->blockSignals(false);
 }
-// ^[0-9]+$ вот тебе регекс нормальный, клоун
+
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
+    QRegularExpression regExp("^[1-9]+[0-9]*$");
+    QRegularExpressionMatch match = regExp.match(item->text());
+
     ui->barTableWidget->blockSignals(true);
-    if(item->text().toDouble() == 0 || item->text().toDouble() < 0){
-        item->setBackground(QBrush(Qt::red));
-    }
-    else
+    if(match.hasMatch())
         item->setBackground(QBrush(Qt::white));
+    else
+        item->setBackground(QBrush(Qt::red));
     ui->barTableWidget->blockSignals(false);
 
     QList<QTableWidgetItem *> barData;
@@ -132,18 +137,20 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
 }
 
 void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
+    QRegularExpression regExp("^[1-9]+[0-9]*$");
+    QRegularExpressionMatch match = regExp.match(item->text());
+
     item->tableWidget()->blockSignals(true);
-    if(item->text().toDouble() == 0){
-        item->setBackground(QBrush(Qt::red));
-    }
-    else
+    if(match.hasMatch())
         item->setBackground(QBrush(Qt::white));
+    else
+        item->setBackground(QBrush(Qt::red));
     item->tableWidget()->blockSignals(false);
 }
 
 bool MainWindow::isRowValid(QList<QTableWidgetItem *> barData){
     for(auto i: barData){
-        if(i->background() == QBrush(Qt::red) || i->text() == "")
+        if(i->background() == QBrush(Qt::red))
             return false;
     }
     return true;
@@ -164,9 +171,10 @@ void MainWindow::draw(){
     graphicScene->clear();
 
     QList<QGraphicsRectItem*> rects;
-    graphicScene->addItem(leftSupport);
-    graphicScene->addItem(rightSupport);
-
+    leftSupport = graphicScene->addPixmap(QPixmap(":/resources/images/leftSupport.png"));
+    rightSupport = graphicScene->addPixmap(QPixmap(":/resources/images/rightSupport.png"));
+    leftSupport->hide();
+    rightSupport->hide();
 
     QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*50,
                                                         barsList.at(0).at(1)->text().toDouble()*25, QPen(Qt::black,5));
@@ -176,7 +184,7 @@ void MainWindow::draw(){
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
 
     leftSupport->setPos((0 - leftSupport->pixmap().width()),
-                        (-leftSupport->pixmap().height()/2 - lineItem->y()));
+                        rectItem->rect().center().ry()-leftSupport->pixmap().height()/2);
 
     if(barsList.begin()+1 != barsList.end())
     for(auto i = barsList.begin()+1; i < barsList.end(); i++){
@@ -188,6 +196,13 @@ void MainWindow::draw(){
                                                             (*i).at(1)->text().toDouble()*25, QPen(Qt::black,5));
         rects.append(rectItem);
     }
+    rightSupport->setPos(rects.at(rects.size()-1)->rect().topRight().rx(),
+                        leftSupport->y());
+
+    if(ui->sealingLeftCheckBox->isChecked())
+        leftSupport->show();
+    if(ui->sealingRightCheckBox->isChecked())
+        rightSupport->show();
 }
 
 void MainWindow::leftSupportValueChanged(const int& state){
