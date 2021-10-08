@@ -763,19 +763,6 @@
      <string>C</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="drawPushButton">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>140</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Draw</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

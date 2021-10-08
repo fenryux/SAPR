@@ -33,7 +33,8 @@ private slots:
 
 private:
     bool isRowValid(QList<QTableWidgetItem *> barData);
-    bool isTableValid();
+    bool isBarTableValid();
+    bool isForceTableValid(const QTableWidget* table);
 
     Ui::MainWindow *ui;
     QString currentFile;
@@ -46,6 +47,9 @@ private:
     QGraphicsPixmapItem* rightSupport;
 
     QList<QList<QTableWidgetItem*>> barsList;
+    QList<QTableWidgetItem*> forceFList;
+    QList<QTableWidgetItem*> forceQList;
+
 
 };
 #endif // MAINWINDOW_H

@@ -70,6 +70,8 @@ void MainWindow::barAmountValueChanged(){
             }
 
         barsList.resize(barsAmount);
+        forceQList.resize(barsAmount);
+        forceFList.resize(barsAmount+1);
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
 
@@ -131,7 +133,7 @@ void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
     if(isRowValid(barData)){
         if(!barsList.contains(barData))
             barsList.replace(barData.at(0)->row(), barData);
-        if(isTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
+        if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
             draw();
     }
 }
@@ -146,6 +148,18 @@ void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
     else
         item->setBackground(QBrush(Qt::red));
     item->tableWidget()->blockSignals(false);
+
+    if(item->background().color() != Qt::red){
+        if(item->tableWidget()->rowCount() == barsAmount + 1){
+            if(!forceFList.contains(item))
+                forceFList.replace(item->row(), item);
+        }
+        else
+            if(!forceQList.contains(item))
+                forceQList.replace(item->row(), item);
+        if(isForceTableValid(item->tableWidget()) && isBarTableValid())
+            draw();
+    }
 }
 
 bool MainWindow::isRowValid(QList<QTableWidgetItem *> barData){
@@ -156,7 +170,7 @@ bool MainWindow::isRowValid(QList<QTableWidgetItem *> barData){
     return true;
 }
 
-bool MainWindow::isTableValid(){
+bool MainWindow::isBarTableValid(){
     for(int i = 0; i < ui->barTableWidget->rowCount(); i++){
         for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
 //            qDebug() << ui->barTableWidget->item(i,j)->text() << ' ' << ui->barTableWidget->item(i,j)->text().toDouble();
@@ -164,6 +178,13 @@ bool MainWindow::isTableValid(){
                 return false;
         }
     }
+    return true;
+}
+
+bool MainWindow::isForceTableValid(const QTableWidget* table){
+    for(int i = 0; i < table->rowCount(); i++)
+        if(table->itemAt(i,0)->background().color() == Qt::red)
+            return false;
     return true;
 }
 // P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях валидны
@@ -206,7 +227,7 @@ void MainWindow::draw(){
 }
 
 void MainWindow::leftSupportValueChanged(const int& state){
-    if(barsAmount == 0 || !isTableValid())
+    if(barsAmount == 0 || !isBarTableValid())
         return;
     if(state != 2)
         leftSupport->hide();
@@ -214,7 +235,7 @@ void MainWindow::leftSupportValueChanged(const int& state){
 }
 
 void MainWindow::rightSupportValueChanged(const int& state){
-    if(barsAmount == 0 || !isTableValid())
+    if(barsAmount == 0 || !isBarTableValid())
         return;
     if(state != 2)
         rightSupport->hide();
