@@ -30,7 +30,6 @@ private slots:
     void about();
     void exit();
 
-
 private:
     bool isRowValid(QList<QTableWidgetItem *> barData);
     bool isBarTableValid();
@@ -49,7 +48,6 @@ private:
     QList<QList<QTableWidgetItem*>> barsList;
     QList<QTableWidgetItem*> forceFList;
     QList<QTableWidgetItem*> forceQList;
-
 
 };
 #endif // MAINWINDOW_H
