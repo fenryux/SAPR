@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent)
     barsAmount = 0;
     ui->barAmountSpinBox->setValue(barsAmount);
 
-    ui->barTableWidget->setColumnCount(4); // 4 - кол-во параметров стержней
     ui->barTableWidget->setRowCount(barsAmount);
     ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->forceFTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -29,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
+    connect(ui->actionSave_as, &QAction::triggered, this, &MainWindow::saveAs);
     connect(ui->barAmountSpinBox, &QSpinBox::valueChanged, this, &MainWindow::barAmountValueChanged);
     connect(ui->barTableWidget, &QTableWidget::itemChanged, this, &MainWindow::barTableCellValueChanged);
     connect(ui->forceFTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
@@ -193,6 +193,7 @@ void MainWindow::draw(){
     graphicScene->clear();
 
     QList<QGraphicsRectItem*> rects;
+    QList<QGraphicsPixmapItem*> forcesF;
 
     leftSupport = graphicScene->addPixmap(QPixmap(":/resources/images/leftSupport.png"));
     rightSupport = graphicScene->addPixmap(QPixmap(":/resources/images/rightSupport.png"));
@@ -207,13 +208,49 @@ void MainWindow::draw(){
             if(forceQList.at(0)->text().toDouble() > 0){
                 QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longPlusForce.png"));
                 forceQ->setParentItem(rectItem);
-                forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
+                forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
+                               rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
             } else if(forceQList.at(0)->text().toDouble() < 0){
                 QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longMinusForce.png"));
                 forceQ->setParentItem(rectItem);
-                forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
+                forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
+                               rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
             }
         }
+    if(forceFList.at(0) != nullptr){
+        if(forceFList.at(0)->text().toDouble() != 0){
+            if(forceFList.at(0)->text().toDouble() > 0){
+                QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                forceF->setParentItem(rectItem);
+                forceF->setPos(rectItem->rect().topLeft().rx(),
+                               rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                forcesF.append(forceF);
+            } else if(forceFList.at(0)->text().toDouble() < 0){
+                QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                forceF->setParentItem(rectItem);
+                forceF->setPos(rectItem->rect().topLeft().rx(),
+                               rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                forcesF.append(forceF);
+            }
+        }
+    }
+    if(forceFList.at(1) != nullptr){
+        if(forceFList.at(1)->text().toDouble() != 0){
+            if(forceFList.at(1)->text().toDouble() > 0){
+                QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                forceF->setParentItem(rectItem);
+                forceF->setPos(rectItem->rect().topRight().rx(),
+                               rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                forcesF.append(forceF);
+            } else if(forceFList.at(1)->text().toDouble() < 0){
+                QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                forceF->setParentItem(rectItem);
+                forceF->setPos(rectItem->rect().topRight().rx(),
+                               rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                forcesF.append(forceF);
+            }
+        }
+    }
 
     lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000, rectItem->rect().center().ry(),QPen(Qt::DashDotLine));
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
@@ -236,17 +273,33 @@ void MainWindow::draw(){
                     if(forceQList.at(i)->text().toDouble() > 0){
                         QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longPlusForce.png"));
                         forceQ->setParentItem(rectItem);
-                        forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
+                        forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
+                                       rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
                     } else if(forceQList.at(i)->text().toDouble() < 0){
                         QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longMinusForce.png"));
                         forceQ->setParentItem(rectItem);
-                        forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
+                        forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
+                                       rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
                     }
                 }
+            if(forceFList.at(i+1) != nullptr){
+                if(forceFList.at(i+1)->text().toDouble() != 0){
+                    if(forceFList.at(i+1)->text().toDouble() > 0){
+                        QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                        forceF->setParentItem(rectItem);
+                        forceF->setPos(rectItem->rect().topRight().rx()/* - forceF->pixmap().width()*/
+                                       ,rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                        forcesF.append(forceF);
+                    } else if(forceFList.at(i+1)->text().toDouble() < 0){
+                        QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                        forceF->setParentItem(rectItem);
+                        forceF->setPos(rectItem->rect().topRight().rx(),
+                                       rectItem->rect().center().ry() - forceF->pixmap().height()/2);
+                        forcesF.append(forceF);
+                    }
+                }
+            }
         }
-    if(!forceFList.isEmpty()){
-
-    }
     rightSupport->setPos(rects.at(rects.size()-1)->rect().topRight().rx(),
                         leftSupport->y());
 
@@ -269,6 +322,7 @@ void MainWindow::leftSupportValueChanged(const int& state){
     }
     else{
         ui->forceFTableWidget->item(0,0)->setFlags(Qt::NoItemFlags);
+        ui->forceFTableWidget->item(0,0)->setText("0");
         if(!isBarTableValid())
             return;
         leftSupport->show();
@@ -280,14 +334,17 @@ void MainWindow::rightSupportValueChanged(const int& state){
         return;
     if(state != 2){
         ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->setFlags(Qt::ItemIsEnabled);
-        ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->setFlags(ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->flags() ^ Qt::ItemIsSelectable);
-        ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->setFlags(ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->flags() ^ Qt::ItemIsEditable);
+        ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->
+                setFlags(ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->flags() ^ Qt::ItemIsSelectable);
+        ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->
+                setFlags(ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->flags() ^ Qt::ItemIsEditable);
         if(!isBarTableValid())
             return;
         rightSupport->hide();
     }
     else {
         ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->setFlags(Qt::NoItemFlags);
+        ui->forceFTableWidget->item(ui->forceFTableWidget->rowCount()-1,0)->setText("0");
         if(!isBarTableValid())
             return;
         rightSupport->show();
@@ -295,8 +352,48 @@ void MainWindow::rightSupportValueChanged(const int& state){
 }
 
 void MainWindow::about(){
-    QMessageBox::about(this,tr("About application"),
-                       tr("Тут могла быть ваша реклама"));
+    QMessageBox::about(this,tr("О программе"),
+                       tr("Данная программа является реализацией системы автоматических прочностных расчетов (САПР) стержневых конструкций.\n"
+                        "Автор: студент Коваленко В.М. группы ИДБ-19-10.\n"
+                          "МГТУ \"СТАНКИН\" 2021г"));
+}
+
+void MainWindow::saveAs(){
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить как");
+    QFile file(fileName);
+
+    if(!file.open(QFile::WriteOnly|QFile::Text)){
+        QMessageBox::warning(this, "Ошибка!","Невозможно открыть файл: " + file.errorString());
+        return;
+    }
+    currentFile = fileName;
+    QTextStream out(&file);
+    QString text;
+    out << "========= Стержни =========\n";
+    out << "=== L === A === σ === E ===\n";
+    // добавление информации о стержнях
+   for(int i = 0; i < barsList.size(); i++){
+       text += "=" + QString::number(i+1);
+       for(int j = 0; j < 4; j++){
+            text += ' ' + barsList.at(i).at(j)->text();
+       }
+       text += '\n';
+   }
+   //добавление информации о нагрузках
+   text += "========= Нагрузки =========\n";
+   text += "======== F ======= q =======\n";
+   for(int i = 0; i < forceFList.size(); i++){
+       text += "=" + QString::number(i+1);
+       if(i > forceQList.size()){
+           text += ' ' + forceFList.at(i)->text() + ' ' + forceQList.at(i)->text();
+       }
+       else{
+           text += ' ' + forceFList.at(i)->text();
+       }
+       text += '\n';
+   }
+   out << text;
+   file.close();
 }
 
 void MainWindow::exit(){

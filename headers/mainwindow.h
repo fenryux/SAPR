@@ -25,7 +25,7 @@ private slots:
     void clearBarData();
     void draw();
 //    void saveProjectFile();
-//    void saveAs();
+    void saveAs();
 //    void open();
     void about();
     void exit();
