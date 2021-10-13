@@ -15,16 +15,44 @@ MainWindow::MainWindow(QWidget *parent)
     graphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
 
-    barsAmount = 0;
+    barsAmount = 1;
     ui->barAmountSpinBox->setValue(barsAmount);
+    barsList.resize(barsAmount);
+    forceFList.resize(barsAmount+1);
+    forceQList.resize(barsAmount);
 
     ui->barTableWidget->setRowCount(barsAmount);
     ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->forceFTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->forceQTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    ui->forceFTableWidget->setRowCount(barsAmount);
+    QList<QTableWidgetItem*> barData;
+    for(int i=0; i < 4; i++){
+        QTableWidgetItem* item = new QTableWidgetItem("1");
+        item->setBackground(QBrush(Qt::white));
+        item->setTextAlignment(Qt::AlignCenter);
+        ui->barTableWidget->setItem(0,i,item);
+        barData.append(item);
+    }
+    barsList.replace(0,barData);
+//    draw();
+
+    ui->forceFTableWidget->setRowCount(barsAmount+1);
+    for(int i=0;i<barsAmount+1;i++){
+        QTableWidgetItem* item = new QTableWidgetItem("0");
+        item->setTextAlignment(Qt::AlignCenter);
+        item->setBackground(Qt::white);
+        ui->forceFTableWidget->setItem(i,0,item);
+        forceFList.replace(i,item);
+    }
     ui->forceQTableWidget->setRowCount(barsAmount);
+//    for(int i=0; i < barsAmount; i++){
+//        QTableWidgetItem* item = new QTableWidgetItem("0");
+//        item->setBackground(QBrush(Qt::white));
+//        item->setTextAlignment(Qt::AlignCenter);
+//        ui->forceQTableWidget->setItem(i,0,item);
+//        forceQList.replace(i,item);
+//    }
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
@@ -49,6 +77,7 @@ MainWindow::~MainWindow()
 void MainWindow::barAmountValueChanged(){
     barsAmount = ui->barAmountSpinBox->value();
 
+    ui->barAmountSpinBox->blockSignals(true);
     ui->barTableWidget->blockSignals(true);
     ui->forceFTableWidget->blockSignals(true);
     ui->forceQTableWidget->blockSignals(true);
@@ -57,25 +86,39 @@ void MainWindow::barAmountValueChanged(){
         int previousValue = ui->barTableWidget->rowCount();
 
         ui->barTableWidget->setRowCount(barsAmount);
-        for(int i = previousValue; i < barsAmount; i++)
-            for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
-                QTableWidgetItem *item = new QTableWidgetItem;
-                item->setTextAlignment(Qt::AlignCenter);
-                item->setBackground(QBrush(Qt::red));
-                ui->barTableWidget->setItem(previousValue, j, item);
-            }
-
         barsList.resize(barsAmount);
         forceQList.resize(barsAmount);
         forceFList.resize(barsAmount+1);
+        for(int i = previousValue; i < barsAmount; i++){
+            QList<QTableWidgetItem *> barData;
+            for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
+                QTableWidgetItem *item = new QTableWidgetItem("1");
+                item->setTextAlignment(Qt::AlignCenter);
+                item->setBackground(QBrush(Qt::white));
+                ui->barTableWidget->setItem(previousValue, j, item);
+                barData.append(item);
+            }
+            if(!barsList.contains(barData))
+               barsList.replace(barData.at(0)->row(), barData);
+            if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
+               draw();
+        }
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
 
         for(int i = previousValue; i < ui->forceFTableWidget->rowCount(); i++){
             QTableWidgetItem *item = new QTableWidgetItem;
-            item->setTextAlignment(Qt::AlignCenter);
-            item->setBackground(QBrush(Qt::red));
-            ui->forceFTableWidget->setItem(i, 0, item);
+            if(i == ui->forceFTableWidget->rowCount()-1 && !ui->sealingRightCheckBox->isChecked()){
+                item->setTextAlignment(Qt::AlignCenter);
+                item->setBackground(QBrush(Qt::red));
+                ui->forceFTableWidget->setItem(i, 0, item);
+                forceFList.replace(i,item);
+            }
+            else{
+                ui->forceFTableWidget->setItem(i,0,item);
+                item->setFlags(Qt::NoItemFlags);
+                item->setText("0");
+            }
         }
 
         for(int i = previousValue; i < barsAmount; i++){
@@ -83,23 +126,30 @@ void MainWindow::barAmountValueChanged(){
             item->setTextAlignment(Qt::AlignCenter);
             item->setBackground(QBrush(Qt::red));
             ui->forceQTableWidget->setItem(i, 0, item);
+
         }
     }
-    else if (barsAmount < 0){
-        barsAmount = 0;
+    else if (barsAmount < 1){
+        barsAmount = 1;
         ui->barAmountSpinBox->setValue(barsAmount);
     }
     else{
         ui->barTableWidget->setRowCount(barsAmount);
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
+        if(ui->sealingRightCheckBox->isChecked()){
+            ui->forceFTableWidget->item(barsAmount,0)->setText("0");
+            ui->forceFTableWidget->item(barsAmount,0)->setFlags(Qt::NoItemFlags);
+        }
         barsList.resize(barsAmount);
         forceFList.resize(barsAmount+1);
+        forceFList.replace(barsAmount, ui->forceFTableWidget->item(barsAmount,0));
         forceQList.resize(barsAmount);
 
         if(isBarTableValid())
             draw();
     }
+    ui->barAmountSpinBox->blockSignals(false);
     ui->barTableWidget->blockSignals(false);
     ui->forceFTableWidget->blockSignals(false);
     ui->forceQTableWidget->blockSignals(false);
@@ -117,7 +167,7 @@ void MainWindow::clearBarData(){
 }
 
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
-    QRegularExpression regExp("^[1-9]+[0-9]*$");
+    QRegularExpression regExp("(^[1-9]+[0-9]*$)|(^[1-9]+\\.?[0-9]*$)");
     QRegularExpressionMatch match = regExp.match(item->text());
 
     ui->barTableWidget->blockSignals(true);
@@ -144,13 +194,8 @@ void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
     QRegularExpressionMatch match = regExp.match(item->text());
 
     item->tableWidget()->blockSignals(true);
-    if(match.hasMatch())
+    if(match.hasMatch()){
         item->setBackground(QBrush(Qt::white));
-    else
-        item->setBackground(QBrush(Qt::red));
-    item->tableWidget()->blockSignals(false);
-
-    if(item->background().color() != Qt::red){
         if(item->tableWidget()->rowCount() == barsAmount + 1){
             if(!forceFList.contains(item))
                 forceFList.replace(item->row(), item);
@@ -161,6 +206,10 @@ void MainWindow::forceTableCellValueChanged(QTableWidgetItem *item){
         if(isForceTableValid(item->tableWidget()) && isBarTableValid())
             draw();
     }
+    else
+        item->setBackground(QBrush(Qt::red));
+    item->tableWidget()->blockSignals(false);
+
 }
 
 bool MainWindow::isRowValid(QList<QTableWidgetItem *> barData){
@@ -310,8 +359,6 @@ void MainWindow::draw(){
 }
 
 void MainWindow::leftSupportValueChanged(const int& state){
-    if(barsAmount == 0)
-        return;
     if(state != 2){
         ui->forceFTableWidget->item(0,0)->setFlags(Qt::ItemIsEnabled);
         ui->forceFTableWidget->item(0,0)->setFlags(ui->forceFTableWidget->item(0,0)->flags() ^ Qt::ItemIsSelectable);
@@ -321,6 +368,7 @@ void MainWindow::leftSupportValueChanged(const int& state){
         leftSupport->hide();
     }
     else{
+        qInfo() << ui->forceFTableWidget->item(0,0)->flags();
         ui->forceFTableWidget->item(0,0)->setFlags(Qt::NoItemFlags);
         ui->forceFTableWidget->item(0,0)->setText("0");
         if(!isBarTableValid())
