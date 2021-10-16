@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->barTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->forceFTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->forceQTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
+    //заполнение начальных данных по стержням
     QList<QTableWidgetItem*> barData;
     for(int i=0; i < 4; i++){
         QTableWidgetItem* item = new QTableWidgetItem("1");
@@ -35,9 +35,10 @@ MainWindow::MainWindow(QWidget *parent)
         barData.append(item);
     }
     barsList.replace(0,barData);
-//    draw();
 
     ui->forceFTableWidget->setRowCount(barsAmount+1);
+    ui->forceQTableWidget->setRowCount(barsAmount);
+    //заполнение начальных данных по нагрузкам
     for(int i=0;i<barsAmount+1;i++){
         QTableWidgetItem* item = new QTableWidgetItem("0");
         item->setTextAlignment(Qt::AlignCenter);
@@ -45,23 +46,22 @@ MainWindow::MainWindow(QWidget *parent)
         ui->forceFTableWidget->setItem(i,0,item);
         forceFList.replace(i,item);
     }
-    ui->forceQTableWidget->setRowCount(barsAmount);
-//    for(int i=0; i < barsAmount; i++){
-//        QTableWidgetItem* item = new QTableWidgetItem("0");
-//        item->setBackground(QBrush(Qt::white));
-//        item->setTextAlignment(Qt::AlignCenter);
-//        ui->forceQTableWidget->setItem(i,0,item);
-//        forceQList.replace(i,item);
-//    }
+    QTableWidgetItem* item = new QTableWidgetItem("0");
+    item->setTextAlignment(Qt::AlignCenter);
+    item->setBackground(Qt::white);
+    ui->forceQTableWidget->setItem(0,0,item);
+    forceQList.replace(0,item);
+
+    draw();
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
     connect(ui->actionSave_as, &QAction::triggered, this, &MainWindow::saveAs);
+    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::open);
     connect(ui->barAmountSpinBox, &QSpinBox::valueChanged, this, &MainWindow::barAmountValueChanged);
     connect(ui->barTableWidget, &QTableWidget::itemChanged, this, &MainWindow::barTableCellValueChanged);
     connect(ui->forceFTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
     connect(ui->forceQTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
-    connect(ui->clearBarTablePushButton, &QPushButton::pressed, this, &MainWindow::clearBarData);
     connect(ui->sealingLeftCheckBox, &QCheckBox::stateChanged, this, &MainWindow::leftSupportValueChanged);
     connect(ui->sealingRightCheckBox, &QCheckBox::stateChanged, this, &MainWindow::rightSupportValueChanged);
 }
@@ -86,48 +86,60 @@ void MainWindow::barAmountValueChanged(){
         int previousValue = ui->barTableWidget->rowCount();
 
         ui->barTableWidget->setRowCount(barsAmount);
+
         barsList.resize(barsAmount);
         forceQList.resize(barsAmount);
         forceFList.resize(barsAmount+1);
-        for(int i = previousValue; i < barsAmount; i++){
+
+        for(int i = previousValue; i < ui->barTableWidget->rowCount(); i++){
             QList<QTableWidgetItem *> barData;
             for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
                 QTableWidgetItem *item = new QTableWidgetItem("1");
+
                 item->setTextAlignment(Qt::AlignCenter);
                 item->setBackground(QBrush(Qt::white));
+
                 ui->barTableWidget->setItem(previousValue, j, item);
                 barData.append(item);
             }
             if(!barsList.contains(barData))
                barsList.replace(barData.at(0)->row(), barData);
-            if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
-               draw();
+//            if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
+//               draw();
         }
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
 
         for(int i = previousValue; i < ui->forceFTableWidget->rowCount(); i++){
-            QTableWidgetItem *item = new QTableWidgetItem;
-            if(i == ui->forceFTableWidget->rowCount()-1 && !ui->sealingRightCheckBox->isChecked()){
-                item->setTextAlignment(Qt::AlignCenter);
-                item->setBackground(QBrush(Qt::red));
-                ui->forceFTableWidget->setItem(i, 0, item);
-                forceFList.replace(i,item);
+            QTableWidgetItem *item = new QTableWidgetItem("0");
+
+            item->setTextAlignment(Qt::AlignCenter);
+            item->setBackground(Qt::white);
+
+            if(i == ui->forceFTableWidget->rowCount()-1){
+                if(ui->sealingRightCheckBox->isChecked()){
+                    ui->forceFTableWidget->setItem(i,0,item);
+                    item->setFlags(Qt::NoItemFlags);
+                }
+                else{
+                    ui->forceFTableWidget->setItem(i, 0, item);
+                }
             }
             else{
-                ui->forceFTableWidget->setItem(i,0,item);
-                item->setFlags(Qt::NoItemFlags);
-                item->setText("0");
+                ui->forceFTableWidget->setItem(i, 0, item);
             }
+            forceFList.replace(i,item);
         }
 
         for(int i = previousValue; i < barsAmount; i++){
-            QTableWidgetItem *item = new QTableWidgetItem;
+            QTableWidgetItem *item = new QTableWidgetItem("0");
             item->setTextAlignment(Qt::AlignCenter);
-            item->setBackground(QBrush(Qt::red));
+            item->setBackground(Qt::white);
             ui->forceQTableWidget->setItem(i, 0, item);
-
         }
+
+        if(isBarTableValid())
+            draw();
     }
     else if (barsAmount < 1){
         barsAmount = 1;
@@ -140,10 +152,10 @@ void MainWindow::barAmountValueChanged(){
         if(ui->sealingRightCheckBox->isChecked()){
             ui->forceFTableWidget->item(barsAmount,0)->setText("0");
             ui->forceFTableWidget->item(barsAmount,0)->setFlags(Qt::NoItemFlags);
+            forceFList.replace(barsAmount, ui->forceFTableWidget->item(barsAmount,0));
         }
         barsList.resize(barsAmount);
         forceFList.resize(barsAmount+1);
-        forceFList.replace(barsAmount, ui->forceFTableWidget->item(barsAmount,0));
         forceQList.resize(barsAmount);
 
         if(isBarTableValid())
@@ -153,17 +165,6 @@ void MainWindow::barAmountValueChanged(){
     ui->barTableWidget->blockSignals(false);
     ui->forceFTableWidget->blockSignals(false);
     ui->forceQTableWidget->blockSignals(false);
-}
-
-void MainWindow::clearBarData(){
-    ui->barTableWidget->blockSignals(true);
-    for(int i = 0; i < ui->barTableWidget->rowCount(); i++)
-        for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
-            ui->barTableWidget->item(i,j)->setText("");
-            ui->barTableWidget->item(i,j)->setBackground(QBrush(Qt::red));
-        }
-    graphicScene->clear();
-    ui->barTableWidget->blockSignals(false);
 }
 
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
@@ -418,6 +419,7 @@ void MainWindow::saveAs(){
     QTextStream out(&file);
     QString text;
     out << "========= Стержни =========\n";
+    out << "Количество стержней: " << QString::number(barsAmount) << " \n";
     out << "=== L === A === σ === E ===\n";
     // добавление информации о стержнях
    for(int i = 0; i < barsList.size(); i++){
@@ -442,6 +444,54 @@ void MainWindow::saveAs(){
    }
    out << text;
    file.close();
+}
+
+void MainWindow::open(){
+    QString fileName = QFileDialog::getOpenFileName(this,"Open file");
+    QFile file(fileName);
+    currentFile = fileName;
+
+    if(!file.open(QIODevice::ReadOnly|QFile::Text)){
+        QMessageBox::warning(this,"Warning","Cannot open file: " + file.errorString());
+        return;
+    }
+
+    bool isBarDataFound = false;
+    bool isForceDataFound = false;
+    int tempBarAmount = 1;
+    QVector<QStringList> tempBarData;
+    QVector<QStringList> tempForceData;
+
+    QTextStream in(&file);
+    while(!in.atEnd()){
+        QString line = in.readLine();
+        if(line.contains("Количество стержней")){
+            QStringList lineContent = line.split(' ',Qt::SkipEmptyParts);
+            tempBarAmount = lineContent.at(2).toInt();
+        }
+        if(line.contains('L'))
+            isBarDataFound = true;
+        if(isBarDataFound){
+            for(int i = 0;i < tempBarAmount; i++){
+                line = in.readLine();
+                QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
+                tempBarData.append(lineContent);
+            }
+            isBarDataFound = false;
+        }
+        if(line.contains('F'))
+            isForceDataFound = true;
+        if(isForceDataFound){
+            for(int i = 0;i < tempBarAmount+1; i++){
+                line = in.readLine();
+                QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
+                tempForceData.append(lineContent);
+            }
+            isForceDataFound = false;
+        }
+    }
+
+    file.close();
 }
 
 void MainWindow::exit(){

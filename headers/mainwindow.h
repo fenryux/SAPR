@@ -22,11 +22,9 @@ private slots:
     void forceTableCellValueChanged(QTableWidgetItem *item);
     void leftSupportValueChanged(const int& state);
     void rightSupportValueChanged(const int& state);
-    void clearBarData();
     void draw();
-//    void saveProjectFile();
     void saveAs();
-//    void open();
+    void open();
     void about();
     void exit();
 
