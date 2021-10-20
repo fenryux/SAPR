@@ -99,14 +99,14 @@ void MainWindow::barAmountValueChanged(){
                 item->setTextAlignment(Qt::AlignCenter);
                 item->setBackground(QBrush(Qt::white));
 
-                ui->barTableWidget->setItem(previousValue, j, item);
+                ui->barTableWidget->setItem(i, j, item);
                 barData.append(item);
             }
             if(!barsList.contains(barData))
                barsList.replace(barData.at(0)->row(), barData);
-//            if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
-//               draw();
         }
+        if(isBarTableValid()) // если данные о ВСЕХ стержнях валидны, то происходит отрисовка
+           draw();
         ui->forceQTableWidget->setRowCount(barsAmount);
         ui->forceFTableWidget->setRowCount(barsAmount + 1);
 
@@ -407,6 +407,37 @@ void MainWindow::about(){
                           "МГТУ \"СТАНКИН\" 2021г"));
 }
 
+void MainWindow::clearDataTables(){
+    ui->barTableWidget->blockSignals(true);
+    ui->forceFTableWidget->blockSignals(true);
+    ui->forceQTableWidget->blockSignals(true);
+
+    for(int i = 0; i < ui->barTableWidget->rowCount();i++){
+        for(int j = 0; j < ui->barTableWidget->columnCount();j++){
+            ui->barTableWidget->item(i,j)->setText("1");
+            ui->barTableWidget->item(i,j)->setBackground(Qt::white);
+        }
+    }
+
+    for(int i = 0; i < ui->forceFTableWidget->rowCount();i++){
+        for(int j = 0; j < ui->forceFTableWidget->columnCount();j++){
+            ui->forceFTableWidget->item(i,j)->setText("0");
+            ui->forceFTableWidget->item(i,j)->setBackground(Qt::white);
+        }
+    }
+
+    for(int i = 0; i < ui->forceQTableWidget->rowCount();i++){
+        for(int j = 0; j < ui->forceQTableWidget->columnCount();j++){
+            ui->forceQTableWidget->item(i,j)->setText("0");
+            ui->forceQTableWidget->item(i,j)->setBackground(Qt::white);
+        }
+    }
+
+    ui->barTableWidget->blockSignals(false);
+    ui->forceFTableWidget->blockSignals(false);
+    ui->forceQTableWidget->blockSignals(false);
+}
+
 void MainWindow::saveAs(){
     QString fileName = QFileDialog::getSaveFileName(this, "Сохранить как");
     QFile file(fileName);
@@ -434,14 +465,19 @@ void MainWindow::saveAs(){
    text += "======== F ======= q =======\n";
    for(int i = 0; i < forceFList.size(); i++){
        text += "=" + QString::number(i+1);
-       if(i > forceQList.size()){
-           text += ' ' + forceFList.at(i)->text() + ' ' + forceQList.at(i)->text();
-       }
-       else{
-           text += ' ' + forceFList.at(i)->text();
+       text += ' ' + forceFList.at(i)->text();
+       if(i < forceQList.size()){
+           text += ' ' + forceQList.at(i)->text();
        }
        text += '\n';
    }
+   text += "========= Заделки =========\n";
+   if(ui->sealingLeftCheckBox->isChecked())
+       text += "1 ";
+   else text += "0 ";
+   if(ui->sealingRightCheckBox->isChecked())
+       text += "1\n";
+   else text += "0\n";
    out << text;
    file.close();
 }
@@ -458,7 +494,10 @@ void MainWindow::open(){
 
     bool isBarDataFound = false;
     bool isForceDataFound = false;
-    int tempBarAmount = 1;
+    bool isBarAmountFound = false;
+    bool leftSupportFound = false;
+    bool rightSupportFound = false;
+    int tempBarAmount = 0;
     QVector<QStringList> tempBarData;
     QVector<QStringList> tempForceData;
 
@@ -466,29 +505,98 @@ void MainWindow::open(){
     while(!in.atEnd()){
         QString line = in.readLine();
         if(line.contains("Количество стержней")){
+            isBarAmountFound = true;
             QStringList lineContent = line.split(' ',Qt::SkipEmptyParts);
             tempBarAmount = lineContent.at(2).toInt();
         }
-        if(line.contains('L'))
+        if(line.contains('L')){
             isBarDataFound = true;
-        if(isBarDataFound){
             for(int i = 0;i < tempBarAmount; i++){
                 line = in.readLine();
                 QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
                 tempBarData.append(lineContent);
             }
-            isBarDataFound = false;
         }
-        if(line.contains('F'))
+        if(line.contains('F')){
             isForceDataFound = true;
-        if(isForceDataFound){
             for(int i = 0;i < tempBarAmount+1; i++){
                 line = in.readLine();
                 QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
                 tempForceData.append(lineContent);
             }
-            isForceDataFound = false;
         }
+        if(line.contains("Заделки")){
+            line = in.readLine();
+            QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
+            if(lineContent.size() == 2){
+                if(lineContent[0] == '1')
+                    leftSupportFound = true;;
+                if(lineContent[1] == '1')
+                    rightSupportFound = true;
+            }
+            else{
+                QMessageBox::warning(this,"Warning!","Некорректный файл!");
+                file.close();
+                return;
+            }
+        }
+    }
+    clearDataTables();
+
+    if(!isBarAmountFound || !isForceDataFound || !isBarDataFound){
+        QMessageBox::warning(this,"Warning!","Некорректный файл!");
+        file.close();
+        return;
+    }
+    else{
+        //все ли данные присутствую в файле вообще
+        if(tempBarData.size() != tempBarAmount || tempForceData.size() != tempBarAmount+1){
+            QMessageBox::warning(this,"Warning!","Некорректный файл!");
+            file.close();
+            return;
+        }
+        // все ли данные о стержне присутствуют
+        for(int i = 0; i < tempBarAmount;i++){
+            if(tempBarData[i].size() != 5){
+                QMessageBox::warning(this,"Warning!","Некорректный файл!");
+                file.close();
+                return;
+            }
+        }
+        // все ли данные о нагрузках присутствуют
+        for(int i=0;i<tempBarAmount+1;i++)
+            if(i != tempBarAmount){
+                if(tempForceData[i].size()!=3){
+                    QMessageBox::warning(this,"Warning!","Некорректный файл!");
+                    file.close();
+                    return;
+                }
+            }
+            else
+                if(tempForceData[i].size()!=2){
+                    QMessageBox::warning(this,"Warning!","Некорректный файл!");
+                    file.close();
+                    return;
+                }
+        // заполнение таблиц
+        ui->barAmountSpinBox->setValue(tempBarAmount);
+        for(int i = 0; i < barsAmount; i++){
+            for(int j = 0; j < ui->barTableWidget->columnCount(); j++){
+                ui->barTableWidget->item(i,j)->setText(tempBarData[i][j+1]);
+            }
+        }
+        for(int i = 0;i < barsAmount+1; i++){
+            if(i != barsAmount){
+                ui->forceFTableWidget->item(i,0)->setText(tempForceData[i][1]);
+                ui->forceQTableWidget->item(i,0)->setText(tempForceData[i][2]);
+            }
+            else
+                ui->forceFTableWidget->item(i,0)->setText(tempForceData[i][1]);
+        }
+        if(leftSupportFound)
+            ui->sealingLeftCheckBox->setChecked(true);
+        if(rightSupportFound)
+            ui->sealingRightCheckBox->setChecked(true);
     }
 
     file.close();

@@ -32,6 +32,7 @@ private:
     bool isRowValid(QList<QTableWidgetItem *> barData);
     bool isBarTableValid();
     bool isForceTableValid(const QTableWidget* table);
+    void clearDataTables();
 
     Ui::MainWindow *ui;
     QString currentFile;
