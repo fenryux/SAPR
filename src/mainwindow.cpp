@@ -238,6 +238,15 @@ bool MainWindow::isForceTableValid(const QTableWidget* table){
             return false;
     return true;
 }
+
+void MainWindow::calculate(){
+    if(!isBarTableValid() || !isForceTableValid(ui->forceFTableWidget) || !isForceTableValid(ui->forceQTableWidget)){
+        QMessageBox::warning(this,"Warning!","Некорректные данные!");
+        return;
+    }
+    QList<QList<double>> barDataList;
+    QList<double> forceDataList;
+}
 // P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях валидны
 void MainWindow::draw(){
     graphicScene->clear();

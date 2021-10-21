@@ -23,6 +23,7 @@ private slots:
     void leftSupportValueChanged(const int& state);
     void rightSupportValueChanged(const int& state);
     void draw();
+    void calculate();
     void saveAs();
     void open();
     void about();
@@ -47,6 +48,9 @@ private:
     QList<QList<QTableWidgetItem*>> barsList;
     QList<QTableWidgetItem*> forceFList;
     QList<QTableWidgetItem*> forceQList;
+    QList<double> resultDeltaList;
+    QList<QList<double>> resultAList;
+    QList<double> resultNXList;
 
 };
 #endif // MAINWINDOW_H
