@@ -34,6 +34,7 @@ private:
     bool isBarTableValid();
     bool isForceTableValid(const QTableWidget* table);
     void clearDataTables();
+    void Gauss(QList<QList<double>> matrix);
 
     Ui::MainWindow *ui;
     QString currentFile;

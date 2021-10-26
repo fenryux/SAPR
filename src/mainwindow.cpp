@@ -168,7 +168,7 @@ void MainWindow::barAmountValueChanged(){
 }
 
 void MainWindow::barTableCellValueChanged(QTableWidgetItem *item){
-    QRegularExpression regExp("(^[1-9]+[0-9]*$)|(^[1-9]+\\.?[0-9]*$)");
+    QRegularExpression regExp("(^[1-9]+[0-9]*$)|(^[1-9]+\\.?[0-9]*$)|(^[0-9]+\\.{1}[0-9]*$)");
     QRegularExpressionMatch match = regExp.match(item->text());
 
     ui->barTableWidget->blockSignals(true);
@@ -244,8 +244,12 @@ void MainWindow::calculate(){
         QMessageBox::warning(this,"Warning!","Некорректные данные!");
         return;
     }
-    QList<QList<double>> barDataList;
-    QList<double> forceDataList;
+
+    QList<QList<double>> AList;
+    QList<double> bList;
+    QList<double> deltaList;
+
+
 }
 // P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях валидны
 void MainWindow::draw(){
@@ -462,21 +466,21 @@ void MainWindow::saveAs(){
     out << "Количество стержней: " << QString::number(barsAmount) << " \n";
     out << "=== L === A === σ === E ===\n";
     // добавление информации о стержнях
-   for(int i = 0; i < barsList.size(); i++){
+   for(int i = 0; i < barsAmount; i++){
        text += "=" + QString::number(i+1);
        for(int j = 0; j < 4; j++){
-            text += ' ' + barsList.at(i).at(j)->text();
+            text += ' ' + ui->barTableWidget->item(i,j)->text();
        }
        text += '\n';
    }
    //добавление информации о нагрузках
    text += "========= Нагрузки =========\n";
    text += "======== F ======= q =======\n";
-   for(int i = 0; i < forceFList.size(); i++){
+   for(int i = 0; i < barsAmount+1; i++){
        text += "=" + QString::number(i+1);
-       text += ' ' + forceFList.at(i)->text();
-       if(i < forceQList.size()){
-           text += ' ' + forceQList.at(i)->text();
+       text += ' ' + ui->forceFTableWidget->item(i,0)->text();
+       if(i < barsAmount){
+           text += ' ' + ui->forceQTableWidget->item(i,0)->text();
        }
        text += '\n';
    }
@@ -539,7 +543,7 @@ void MainWindow::open(){
             QStringList lineContent = line.split(' ', Qt::SkipEmptyParts);
             if(lineContent.size() == 2){
                 if(lineContent[0] == '1')
-                    leftSupportFound = true;;
+                    leftSupportFound = true;
                 if(lineContent[1] == '1')
                     rightSupportFound = true;
             }
@@ -602,10 +606,13 @@ void MainWindow::open(){
             else
                 ui->forceFTableWidget->item(i,0)->setText(tempForceData[i][1]);
         }
-        if(leftSupportFound)
-            ui->sealingLeftCheckBox->setChecked(true);
-        if(rightSupportFound)
-            ui->sealingRightCheckBox->setChecked(true);
+        ui->sealingLeftCheckBox->setChecked(leftSupportFound);
+        ui->sealingRightCheckBox->setChecked(rightSupportFound);
+//        if(leftSupportFound)
+//            ui->sealingLeftCheckBox->setChecked(true);
+//        if(rightSupportFound)
+//            ui->sealingRightCheckBox->setChecked(true);
+//        else ui->sealingRightCheckBox->setChecked(false);
     }
 
     file.close();
