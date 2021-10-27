@@ -19,6 +19,9 @@ public:
 private slots:
     void barAmountValueChanged();
     void barTableCellValueChanged(QTableWidgetItem *item);
+    void scaleIncreasePressed();
+    void scaleDecreasePressed();
+    void scaleResetPressed();
     void forceTableCellValueChanged(QTableWidgetItem *item);
     void leftSupportValueChanged(const int& state);
     void rightSupportValueChanged(const int& state);
@@ -34,12 +37,13 @@ private:
     bool isBarTableValid();
     bool isForceTableValid(const QTableWidget* table);
     void clearDataTables();
-    void Gauss(QList<QList<double>> matrix);
+    QList<double> Gauss(QList<QList<double>> matrix);
 
     Ui::MainWindow *ui;
     QString currentFile;
 
     int barsAmount;
+    double scale;
 
     QGraphicsScene* graphicScene;
     QGraphicsLineItem* lineItem;

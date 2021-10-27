@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
-    <height>600</height>
+    <width>1024</width>
+    <height>768</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>800</width>
-    <height>600</height>
+    <width>1024</width>
+    <height>768</height>
    </size>
   </property>
   <property name="palette">
@@ -475,17 +475,17 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>290</y>
-      <width>761</width>
-      <height>261</height>
+      <y>300</y>
+      <width>991</width>
+      <height>421</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="calcPushButton">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>170</y>
+      <x>490</x>
+      <y>190</y>
       <width>91</width>
       <height>31</height>
      </rect>
@@ -533,7 +533,7 @@
    <widget class="QTableWidget" name="forceFTableWidget">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>790</x>
       <y>40</y>
       <width>101</width>
       <height>192</height>
@@ -574,7 +574,7 @@
    <widget class="QLabel" name="forcesLabel">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>850</x>
       <y>10</y>
       <width>91</width>
       <height>31</height>
@@ -595,8 +595,8 @@
    <widget class="QSpinBox" name="barAmountSpinBox">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>50</y>
+      <x>510</x>
+      <y>70</y>
       <width>42</width>
       <height>22</height>
      </rect>
@@ -605,8 +605,8 @@
    <widget class="QLabel" name="barAmountLabel">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>20</y>
+      <x>450</x>
+      <y>40</y>
       <width>181</width>
       <height>21</height>
      </rect>
@@ -626,8 +626,8 @@
    <widget class="QCheckBox" name="sealingLeftCheckBox">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>110</y>
+      <x>510</x>
+      <y>130</y>
       <width>72</width>
       <height>19</height>
      </rect>
@@ -639,8 +639,8 @@
    <widget class="QCheckBox" name="sealingRightCheckBox">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>110</y>
+      <x>540</x>
+      <y>130</y>
       <width>72</width>
       <height>19</height>
      </rect>
@@ -652,8 +652,8 @@
    <widget class="QLabel" name="sealingLabel">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>80</y>
+      <x>500</x>
+      <y>100</y>
       <width>71</width>
       <height>21</height>
      </rect>
@@ -673,7 +673,7 @@
    <widget class="QTableWidget" name="forceQTableWidget">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>890</x>
       <y>40</y>
       <width>101</width>
       <height>192</height>
@@ -694,7 +694,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>260</y>
+      <y>275</y>
       <width>21</width>
       <height>21</height>
      </rect>
@@ -707,7 +707,7 @@
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>260</y>
+      <y>275</y>
       <width>21</width>
       <height>21</height>
      </rect>
@@ -720,7 +720,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>260</y>
+      <y>275</y>
       <width>21</width>
       <height>21</height>
      </rect>
@@ -733,7 +733,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>235</y>
+      <y>250</y>
       <width>181</width>
       <height>21</height>
      </rect>
@@ -756,7 +756,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1024</width>
      <height>20</height>
     </rect>
    </property>

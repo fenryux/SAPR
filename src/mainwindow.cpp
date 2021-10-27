@@ -4,6 +4,9 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
+#define HEIGHT 45
+#define WIDTH 60
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -14,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     graphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
+    scale = 1;
 
     barsAmount = 1;
     ui->barAmountSpinBox->setValue(barsAmount);
@@ -64,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->forceQTableWidget, &QTableWidget::itemChanged, this, &MainWindow::forceTableCellValueChanged);
     connect(ui->sealingLeftCheckBox, &QCheckBox::stateChanged, this, &MainWindow::leftSupportValueChanged);
     connect(ui->sealingRightCheckBox, &QCheckBox::stateChanged, this, &MainWindow::rightSupportValueChanged);
+    connect(ui->scaleMinusPushButton, &QPushButton::pressed, this, &MainWindow::scaleDecreasePressed);
+    connect(ui->scalePlusPushButton, &QPushButton::pressed, this, &MainWindow::scaleIncreasePressed);
+    connect(ui->scaleResetPushButton, &QPushButton::pressed, this, &MainWindow::scaleResetPressed);
 }
 
 MainWindow::~MainWindow()
@@ -263,33 +270,39 @@ void MainWindow::draw(){
     leftSupport->hide();
     rightSupport->hide();
 
-    QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*50,
-                                                        barsList.at(0).at(1)->text().toDouble()*25, QPen(Qt::black,5));
+    // отрисовка 1-го стержня
+    QGraphicsRectItem* rectItem = graphicScene->addRect(0,0,barsList.at(0).at(0)->text().toDouble()*WIDTH*scale,
+                                                        barsList.at(0).at(1)->text().toDouble()*HEIGHT*scale, QPen(Qt::black,3));
     rects.append(rectItem);
     if(forceQList.at(0) != nullptr)
         if(forceQList.at(0)->text().toDouble() != 0){
             if(forceQList.at(0)->text().toDouble() > 0){
                 QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longPlusForce.png"));
+                forceQ->pixmap() = forceQ->pixmap().scaled(forceQ->pixmap().width()*scale,forceQ->pixmap().height()*scale);
                 forceQ->setParentItem(rectItem);
                 forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
                                rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
             } else if(forceQList.at(0)->text().toDouble() < 0){
                 QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longMinusForce.png"));
+                forceQ->pixmap() = forceQ->pixmap().scaled(forceQ->pixmap().width()*scale,forceQ->pixmap().height()*scale);
                 forceQ->setParentItem(rectItem);
                 forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
                                rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
             }
         }
+    // отрисовка нагрузок на 1 и 2 узлах
     if(forceFList.at(0) != nullptr){
         if(forceFList.at(0)->text().toDouble() != 0){
             if(forceFList.at(0)->text().toDouble() > 0){
                 QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                 forceF->setParentItem(rectItem);
                 forceF->setPos(rectItem->rect().topLeft().rx(),
                                rectItem->rect().center().ry() - forceF->pixmap().height()/2);
                 forcesF.append(forceF);
             } else if(forceFList.at(0)->text().toDouble() < 0){
                 QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                 forceF->setParentItem(rectItem);
                 forceF->setPos(rectItem->rect().topLeft().rx(),
                                rectItem->rect().center().ry() - forceF->pixmap().height()/2);
@@ -301,12 +314,14 @@ void MainWindow::draw(){
         if(forceFList.at(1)->text().toDouble() != 0){
             if(forceFList.at(1)->text().toDouble() > 0){
                 QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                 forceF->setParentItem(rectItem);
                 forceF->setPos(rectItem->rect().topRight().rx(),
                                rectItem->rect().center().ry() - forceF->pixmap().height()/2);
                 forcesF.append(forceF);
             } else if(forceFList.at(1)->text().toDouble() < 0){
                 QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                 forceF->setParentItem(rectItem);
                 forceF->setPos(rectItem->rect().topRight().rx(),
                                rectItem->rect().center().ry() - forceF->pixmap().height()/2);
@@ -314,32 +329,34 @@ void MainWindow::draw(){
             }
         }
     }
-
+    // отрисовка оси
     lineItem = graphicScene->addLine(-1000, rectItem->rect().center().ry(), 2000, rectItem->rect().center().ry(),QPen(Qt::DashDotLine));
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
 
     leftSupport->setPos((0 - leftSupport->pixmap().width()),
                         rectItem->rect().center().ry()-leftSupport->pixmap().height()/2);
-
+    // отрисовка остальных стержней
     if(barsList.begin()+1 != barsList.end())
         for(int i = 1; i < barsList.size(); i++){
             double x = rects.at(rects.size()-1)->rect().topRight().rx();
-            double dy = (barsList.at(i).at(1)->text().toDouble() - barsList.at(i-1).at(1)->text().toDouble())*25/2;
+            double dy = (barsList.at(i).at(1)->text().toDouble() - barsList.at(i-1).at(1)->text().toDouble())*HEIGHT*scale/2;
             double y = rects.at(rects.size()-1)->rect().topRight().ry() - dy;
 
-            QGraphicsRectItem* rectItem = graphicScene->addRect(x,y,barsList.at(i).at(0)->text().toDouble()*50,
-                                                                barsList.at(i).at(1)->text().toDouble()*25, QPen(Qt::black,5));
+            QGraphicsRectItem* rectItem = graphicScene->addRect(x,y,barsList.at(i).at(0)->text().toDouble()*WIDTH*scale,
+                                                                barsList.at(i).at(1)->text().toDouble()*HEIGHT*scale, QPen(Qt::black,3));
             rects.append(rectItem);
 
             if(forceQList.at(i) != nullptr)
                 if(forceQList.at(i)->text().toDouble() != 0){
                     if(forceQList.at(i)->text().toDouble() > 0){
                         QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longPlusForce.png"));
+                        forceQ->pixmap() = forceQ->pixmap().scaled(forceQ->pixmap().width()*scale,forceQ->pixmap().height()*scale);
                         forceQ->setParentItem(rectItem);
                         forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
                                        rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
                     } else if(forceQList.at(i)->text().toDouble() < 0){
                         QGraphicsPixmapItem * forceQ = graphicScene->addPixmap(QPixmap(":/resources/images/longMinusForce.png"));
+                        forceQ->pixmap() = forceQ->pixmap().scaled(forceQ->pixmap().width()*scale,forceQ->pixmap().height()*scale);
                         forceQ->setParentItem(rectItem);
                         forceQ->setPos(rectItem->rect().center().rx() - forceQ->pixmap().width()/2,
                                        rectItem->rect().center().ry() - forceQ->pixmap().height()/2);
@@ -349,12 +366,14 @@ void MainWindow::draw(){
                 if(forceFList.at(i+1)->text().toDouble() != 0){
                     if(forceFList.at(i+1)->text().toDouble() > 0){
                         QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexPlusForce.png"));
+                        forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                         forceF->setParentItem(rectItem);
                         forceF->setPos(rectItem->rect().topRight().rx()/* - forceF->pixmap().width()*/
                                        ,rectItem->rect().center().ry() - forceF->pixmap().height()/2);
                         forcesF.append(forceF);
                     } else if(forceFList.at(i+1)->text().toDouble() < 0){
                         QGraphicsPixmapItem * forceF = graphicScene->addPixmap(QPixmap(":/resources/images/vertexMinusForce.png"));
+                        forceF->pixmap() = forceF->pixmap().scaled(forceF->pixmap().width()*scale,forceF->pixmap().height()*scale);
                         forceF->setParentItem(rectItem);
                         forceF->setPos(rectItem->rect().topRight().rx(),
                                        rectItem->rect().center().ry() - forceF->pixmap().height()/2);
@@ -370,6 +389,28 @@ void MainWindow::draw(){
         leftSupport->show();
     if(ui->sealingRightCheckBox->isChecked())
         rightSupport->show();
+
+    ui->graphicsView->centerOn(rects.at(rects.size()/2));
+}
+
+void MainWindow::scaleIncreasePressed(){
+    if((scale + 0.1) <= 1.9)
+        scale += 0.1;
+    if(isBarTableValid() && isForceTableValid(ui->forceFTableWidget) && isForceTableValid(ui->forceQTableWidget))
+        draw();
+}
+
+void MainWindow::scaleDecreasePressed(){
+    if((scale - 0.1) >= 0.1)
+        scale -= 0.1;
+    if(isBarTableValid() && isForceTableValid(ui->forceFTableWidget) && isForceTableValid(ui->forceQTableWidget))
+        draw();
+}
+
+void MainWindow::scaleResetPressed(){
+    scale = 1;
+    if(isBarTableValid() && isForceTableValid(ui->forceFTableWidget) && isForceTableValid(ui->forceQTableWidget))
+        draw();
 }
 
 void MainWindow::leftSupportValueChanged(const int& state){
@@ -608,11 +649,6 @@ void MainWindow::open(){
         }
         ui->sealingLeftCheckBox->setChecked(leftSupportFound);
         ui->sealingRightCheckBox->setChecked(rightSupportFound);
-//        if(leftSupportFound)
-//            ui->sealingLeftCheckBox->setChecked(true);
-//        if(rightSupportFound)
-//            ui->sealingRightCheckBox->setChecked(true);
-//        else ui->sealingRightCheckBox->setChecked(false);
     }
 
     file.close();
