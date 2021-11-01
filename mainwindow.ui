@@ -521,7 +521,7 @@
     </column>
     <column>
      <property name="text">
-      <string>σ, кН</string>
+      <string>σ, МПа</string>
      </property>
     </column>
     <column>

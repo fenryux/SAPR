@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-//#include "headers/bargraphicitem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,12 +15,10 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
 private slots:
     void barAmountValueChanged();
     void barTableCellValueChanged(QTableWidgetItem *item);
-    void scaleIncreasePressed();
-    void scaleDecreasePressed();
-    void scaleResetPressed();
     void forceTableCellValueChanged(QTableWidgetItem *item);
     void leftSupportValueChanged(const int& state);
     void rightSupportValueChanged(const int& state);
@@ -32,18 +29,23 @@ private slots:
     void about();
     void exit();
 
+protected:
+#if QT_CONFIG(wheelevent)
+    void wheelEvent(QWheelEvent* event) override;
+#endif
+    void scaleView(qreal scaleFactor);
+
 private:
     bool isRowValid(QList<QTableWidgetItem *> barData);
     bool isBarTableValid();
     bool isForceTableValid(const QTableWidget* table);
     void clearDataTables();
-    QList<double> Gauss(QList<QList<double>> matrix);
+    QList<double> Gauss(QList<QList<double>> &matrixA, QList<double> &matrixB);
 
     Ui::MainWindow *ui;
     QString currentFile;
 
     int barsAmount;
-    double scale;
 
     QGraphicsScene* graphicScene;
     QGraphicsLineItem* lineItem;
@@ -53,9 +55,10 @@ private:
     QList<QList<QTableWidgetItem*>> barsList;
     QList<QTableWidgetItem*> forceFList;
     QList<QTableWidgetItem*> forceQList;
-    QList<double> resultDeltaList;
     QList<QList<double>> resultAList;
-    QList<double> resultNXList;
+    QList<double> resultBList;
+    QList<double> resultDeltaList;
+    QList<QList<double>> resultNXList;
 
 };
 #endif // MAINWINDOW_H
