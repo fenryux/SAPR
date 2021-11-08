@@ -471,284 +471,439 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGraphicsView" name="graphicsView">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>300</y>
-      <width>991</width>
-      <height>421</height>
+      <x>0</x>
+      <y>0</y>
+      <width>1021</width>
+      <height>761</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QPushButton" name="calcPushButton">
-    <property name="geometry">
-     <rect>
-      <x>490</x>
-      <y>190</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
+    <property name="currentIndex">
+     <number>1</number>
     </property>
-    <property name="text">
-     <string>Посчитать</string>
-    </property>
-   </widget>
-   <widget class="QTableWidget" name="barTableWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>265</width>
-      <height>192</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="sizeAdjustPolicy">
-     <enum>QAbstractScrollArea::AdjustIgnored</enum>
-    </property>
-    <column>
-     <property name="text">
-      <string>L, м</string>
+    <widget class="QWidget" name="preprocessor">
+     <property name="autoFillBackground">
+      <bool>false</bool>
      </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>A, м^2</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>σ, МПа</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>E, МПа</string>
-     </property>
-    </column>
-   </widget>
-   <widget class="QTableWidget" name="forceFTableWidget">
-    <property name="geometry">
-     <rect>
-      <x>790</x>
-      <y>40</y>
-      <width>101</width>
-      <height>192</height>
-     </rect>
-    </property>
-    <row>
-     <property name="text">
-      <string>1</string>
-     </property>
-    </row>
-    <column>
-     <property name="text">
-      <string>F</string>
-     </property>
-    </column>
-   </widget>
-   <widget class="QLabel" name="barsLabel">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>14</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Стержни</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="forcesLabel">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>10</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>14</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Нагрузки</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="barAmountSpinBox">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>70</y>
-      <width>42</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="barAmountLabel">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>40</y>
-      <width>181</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Количество стержней</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="sealingLeftCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>130</y>
-      <width>72</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>L</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="sealingRightCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>130</y>
-      <width>72</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>R</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="sealingLabel">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>100</y>
-      <width>71</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Заделки</string>
-    </property>
-   </widget>
-   <widget class="QTableWidget" name="forceQTableWidget">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>40</y>
-      <width>101</width>
-      <height>192</height>
-     </rect>
-    </property>
-    <row>
-     <property name="text">
-      <string>1</string>
-     </property>
-    </row>
-    <column>
-     <property name="text">
-      <string>q</string>
-     </property>
-    </column>
-   </widget>
-   <widget class="QPushButton" name="scaleMinusPushButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>275</y>
-      <width>21</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>-</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="scalePlusPushButton">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>275</y>
-      <width>21</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>+</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="scaleResetPushButton">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>275</y>
-      <width>21</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>R</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="scaleLabel">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>250</y>
-      <width>181</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Параметры масштаба</string>
-    </property>
+     <attribute name="title">
+      <string>Препроцессор</string>
+     </attribute>
+     <widget class="QCheckBox" name="sealingLeftCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>500</x>
+        <y>100</y>
+        <width>72</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>L</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="forcesLabel">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>0</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Нагрузки</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="barAmountLabel">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>10</y>
+        <width>181</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Количество стержней</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="forceFTableWidget">
+      <property name="geometry">
+       <rect>
+        <x>810</x>
+        <y>30</y>
+        <width>101</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <row>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </row>
+      <column>
+       <property name="text">
+        <string>F</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QCheckBox" name="sealingRightCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>100</y>
+        <width>72</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>R</string>
+      </property>
+     </widget>
+     <widget class="QGraphicsView" name="graphicsView">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>250</y>
+        <width>1001</width>
+        <height>441</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="barsLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Стержни</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="calcPushButton">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>160</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Посчитать</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="forceQTableWidget">
+      <property name="geometry">
+       <rect>
+        <x>910</x>
+        <y>30</y>
+        <width>101</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <row>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </row>
+      <column>
+       <property name="text">
+        <string>q</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QLabel" name="sealingLabel">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>70</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Заделки</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="barAmountSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>500</x>
+        <y>40</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="barTableWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>265</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustIgnored</enum>
+      </property>
+      <column>
+       <property name="text">
+        <string>L, м</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>A, м^2</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>σ, МПа</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>E, МПа</string>
+       </property>
+      </column>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="postprocessor">
+     <attribute name="title">
+      <string>Постпроцессор</string>
+     </attribute>
+     <widget class="QWidget" name="horizontalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>1001</width>
+        <height>691</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="font">
+            <font>
+             <family>Segoe UI</family>
+             <pointsize>12</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>A</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="aResultTableWidget"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="bMatrixResultLabel">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>12</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>B</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="resultLabel">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>12</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Результат</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QTableWidget" name="bResultTableWidget"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QTableWidget" name="deltaResultTableWidget"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>250</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLabel" name="epuresResultLabel">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>12</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Итоговые эпюры</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>10</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="NXCheckBox">
+             <property name="text">
+              <string>Nx</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="UXCheckBox">
+             <property name="text">
+              <string>Ux</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="SigmaCheckBox">
+             <property name="text">
+              <string>σx</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGraphicsView" name="epuresGraphicsView">
+           <property name="minimumSize">
+            <size>
+             <width>550</width>
+             <height>480</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>700</width>
+             <height>700</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -769,15 +924,16 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuProcess">
+   <widget class="QMenu" name="menuPostprocessorParameters">
     <property name="title">
-     <string>Process</string>
+     <string>Параметры</string>
     </property>
-    <addaction name="actionPreprocessor"/>
-    <addaction name="actionPostprocessor"/>
+    <addaction name="actionTableView"/>
+    <addaction name="actionShowEpures"/>
+    <addaction name="actionShowAsGraph"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuProcess"/>
+   <addaction name="menuPostprocessorParameters"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_as">
@@ -808,6 +964,21 @@
   <action name="actionPostprocessor">
    <property name="text">
     <string>Postprocessor</string>
+   </property>
+  </action>
+  <action name="actionTableView">
+   <property name="text">
+    <string>Отобразить результаты таблицей</string>
+   </property>
+  </action>
+  <action name="actionShowEpures">
+   <property name="text">
+    <string>Отобразить эпюры</string>
+   </property>
+  </action>
+  <action name="actionShowAsGraph">
+   <property name="text">
+    <string>Отобразить результаты графиками</string>
    </property>
   </action>
  </widget>

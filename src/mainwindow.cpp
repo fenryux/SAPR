@@ -1,5 +1,6 @@
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
+#include "ui_resultwindow.h"
 
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -15,9 +16,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QAction *actionAbout = ui->menubar->addAction("About");
+    ui->tabWidget->setTabVisible(1,false);
+    ui->menuPostprocessorParameters->actions().at(0)->setCheckable(true);
+    ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
+    ui->menuPostprocessorParameters->actions().at(2)->setCheckable(true);
+    ui->menuPostprocessorParameters->setEnabled(false);
 
     graphicScene = new QGraphicsScene;
+    postprocessorGraphicScene = new QGraphicsScene;
     ui->graphicsView->setScene(graphicScene);
+    ui->epuresGraphicsView->setScene(postprocessorGraphicScene);
 
     barsAmount = 1;
     ui->barAmountSpinBox->setValue(barsAmount);
@@ -326,17 +334,94 @@ void MainWindow::calculate(){
     resultBList = bList;
     resultDeltaList = Gauss(AList, bList);
 
-    resultNXList.clear();
-    for(int i = 0; i < barsAmount; i++){
-        QList<double> NXPerSpaceList;
-        for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
-            double NX = barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble()/barsList[i][0]->text().toDouble()
-                    * (resultDeltaList[i+1] - resultDeltaList[i]) + forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble()/2*(1 - 2*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble())/barsList[i][0]->text().toDouble()));
-            NXPerSpaceList.push_back(NX);
+    if(!resultDeltaList.isEmpty()){
+        // подсчет Nx
+        resultNXList.clear();
+        for(int i = 0; i < barsAmount; i++){
+            QList<double> NXPerSpaceList;
+            for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
+                double NX = barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble()/barsList[i][0]->text().toDouble()
+                        * (resultDeltaList[i+1] - resultDeltaList[i]) + forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble()/2*(1 - 2*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
+                NXPerSpaceList.push_back(NX);
+            }
+            resultNXList.push_back(NXPerSpaceList);
         }
-        resultNXList.push_back(NXPerSpaceList);
+
+        // подсчет Ux
+        resultUXList.clear();
+        for(int i = 0; i < barsAmount; i++){
+            QList<double> UXPerSpaceList;
+            for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
+                double UX = resultDeltaList[i] +
+                        (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble() *
+                        (resultDeltaList[i+1] - resultDeltaList[i]) + (forceQList[i]->text().toDouble() * std::pow(barsList[i][0]->text().toDouble(),2))/(2*barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble())*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2)))*
+                        (1 - (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
+                UXPerSpaceList.push_back(UX);
+            }
+            resultUXList.push_back(UXPerSpaceList);
+        }
+        // подсчет σ_x
+        resultSigmaXList.clear();
+        for(int i = 0; i < barsAmount; i++){
+            QList<double> SigmaXList;
+            for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble(); j++){
+                double SigmaX = resultNXList[i][j]/barsList[i][1]->text().toDouble();
+                SigmaXList.push_back(SigmaX);
+            }
+            resultSigmaXList.push_back(SigmaXList);
+        }
+        // конец расчетов в процессоре
+        ui->tabWidget->setTabVisible(1,true);
+        ui->menuPostprocessorParameters->setEnabled(true);
+        configurePostprocessor();
+    }
+}
+// настройка постпроцессора
+void MainWindow::configurePostprocessor(){
+    ui->bResultTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->aResultTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->deltaResultTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    // заполнение таблицы матрицы A
+    ui->aResultTableWidget->setRowCount(resultAList.size());
+    ui->aResultTableWidget->setColumnCount(resultAList[0].size());
+    for(int i = 0; i < resultAList.size();i++){
+        for(int j = 0; j < resultAList[i].size();j++){
+            QTableWidgetItem *item = new QTableWidgetItem(QString::number(resultAList[i][j]));
+            item->setBackground(Qt::white);
+            item->setTextAlignment(Qt::AlignCenter);
+            item->setFlags(Qt::NoItemFlags);
+            item->setFlags(Qt::ItemIsEnabled);
+            ui->aResultTableWidget->setItem(i,j,item);
+        }
     }
 
+    // заполнение таблицы матрицы B
+    ui->bResultTableWidget->setRowCount(resultBList.size());
+    ui->bResultTableWidget->setColumnCount(1);
+    for(int i = 0; i < resultBList.size();i++){
+        QTableWidgetItem *item = new QTableWidgetItem(QString::number(resultBList[i]));
+        item->setBackground(Qt::white);
+        item->setTextAlignment(Qt::AlignCenter);
+        item->setFlags(Qt::NoItemFlags);
+        item->setFlags(Qt::ItemIsEnabled);
+        ui->bResultTableWidget->setItem(i,0,item);
+    }
+
+    // заполнение таблицы матрицы delta
+    ui->deltaResultTableWidget->setRowCount(resultDeltaList.size());
+    ui->deltaResultTableWidget->setColumnCount(1);
+    for(int i = 0; i < resultDeltaList.size();i++){
+        QTableWidgetItem *item = new QTableWidgetItem(QString::number(resultDeltaList[i]));
+        item->setBackground(Qt::white);
+        item->setTextAlignment(Qt::AlignCenter);
+        item->setFlags(Qt::NoItemFlags);
+        item->setFlags(Qt::ItemIsEnabled);
+        ui->deltaResultTableWidget->setItem(i,0,item);
+    }
+    ui->NXCheckBox->setChecked(true);
+    drawPostprocessor();
+    ui->tabWidget->setCurrentIndex(1);
 }
 // позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
 QList<double> MainWindow::Gauss(QList<QList<double>> &matrixA, QList<double> &matrixB){
@@ -361,6 +446,7 @@ QList<double> MainWindow::Gauss(QList<QList<double>> &matrixA, QList<double> &ma
             }
         if(maxValue < 0.00001){
             QMessageBox::warning(this,"Ошибка!","Невозможно получить решение из-за нулевого столбца " + QString::number(index) + " матрицы A");
+            result.clear();
             return result;
         }
         // смена X[i]
@@ -521,6 +607,66 @@ void MainWindow::draw(){
 
     ui->graphicsView->centerOn(rects.at(rects.size()/2));
 }
+void MainWindow::drawPostprocessor(){
+    postprocessorGraphicScene->clear();
+    NXGraphicItems.clear();
+    UXGraphicItems.clear();
+    SigmaGraphicItems.clear();
+
+    QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(-1000, 0, 1000, 0, QPen(Qt::DashDotLine));
+    lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
+
+    double currentBar = 0;
+    double position = 0;
+    double barStartPosition = position;
+    // отрисовка Nx
+    while(currentBar != barsList.size())
+    {
+        for(int j = 0; j < resultNXList[currentBar].size(); j++){
+            QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(position,0,position,0 - resultNXList[currentBar][j]*15,QPen(Qt::blue,2));
+            position += 3;
+            NXGraphicItems.push_back(lineItem);
+        }
+        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultNXList[currentBar][0]*15,position,0 - resultNXList[currentBar][resultNXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
+        NXGraphicItems.push_back(lineItem);
+        currentBar++;
+        barStartPosition = position;
+    }
+    // отрисовка Ux
+    position = 0;
+    currentBar = 0;
+    barStartPosition = position;
+    while(currentBar != barsList.size())
+    {
+        for(int j = 0; j < resultUXList[currentBar].size(); j++){
+            QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(position,0,position,0 - resultUXList[currentBar][j]*15,QPen(Qt::red,2));
+            position += 3;
+            UXGraphicItems.push_back(lineItem);
+            lineItem->hide();
+        }
+//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultUXList[currentBar][0]*15,position,0 - resultUXList[currentBar][resultUXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
+//        UXGraphicItems.push_back(lineItem);
+        currentBar++;
+        barStartPosition = position;
+    }
+    // отрисовка sigmaX
+    position = 0;
+    currentBar = 0;
+    barStartPosition = position;
+    while(currentBar != barsList.size())
+    {
+        for(int j = 0; j < resultSigmaXList[currentBar].size(); j++){
+            QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(position,0,position,0 - resultSigmaXList[currentBar][j]*15,QPen(Qt::green,2));
+            position += 3;
+            SigmaGraphicItems.push_back(lineItem);
+            lineItem->hide();
+        }
+//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultUXList[currentBar][0]*15,position,0 - resultUXList[currentBar][resultUXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
+//        UXGraphicItems.push_back(lineItem);
+        currentBar++;
+        barStartPosition = position;
+    }
+}
 // масштабирование рисунка. Автор: Марк Бобровских
 void MainWindow::scaleView(qreal scaleFactor)
 {
@@ -537,6 +683,7 @@ void MainWindow::wheelEvent(QWheelEvent *event)
 }
 
 void MainWindow::leftSupportValueChanged(const int& state){
+
     if(state != 2){
         ui->forceFTableWidget->item(0,0)->setFlags(Qt::ItemIsEnabled);
         ui->forceFTableWidget->item(0,0)->setFlags(ui->forceFTableWidget->item(0,0)->flags() ^ Qt::ItemIsSelectable);
@@ -546,7 +693,6 @@ void MainWindow::leftSupportValueChanged(const int& state){
         leftSupport->hide();
     }
     else{
-        qInfo() << ui->forceFTableWidget->item(0,0)->flags();
         ui->forceFTableWidget->item(0,0)->setFlags(Qt::NoItemFlags);
         ui->forceFTableWidget->item(0,0)->setText("0");
         if(!isBarTableValid())
@@ -556,6 +702,7 @@ void MainWindow::leftSupportValueChanged(const int& state){
 }
 
 void MainWindow::rightSupportValueChanged(const int& state){
+
     if(barsAmount == 0)
         return;
     if(state != 2){
@@ -781,3 +928,34 @@ void MainWindow::exit(){
     QCoreApplication::exit();
 }
 
+void MainWindow::on_NXCheckBox_stateChanged(int arg1)
+{
+    if(ui->NXCheckBox->isChecked()){
+       for(auto i: NXGraphicItems)
+           i->show();
+    }
+    else for(auto i: NXGraphicItems)
+        i->hide();
+}
+
+
+void MainWindow::on_UXCheckBox_stateChanged(int arg1)
+{
+    if(ui->UXCheckBox->isChecked()){
+       for(auto i: UXGraphicItems)
+           i->show();
+    }
+    else for(auto i: UXGraphicItems)
+        i->hide();
+}
+
+
+void MainWindow::on_SigmaCheckBox_stateChanged(int arg1)
+{
+    if(ui->SigmaCheckBox->isChecked()){
+       for(auto i: SigmaGraphicItems)
+           i->show();
+    }
+    else for(auto i: SigmaGraphicItems)
+        i->hide();
+}
