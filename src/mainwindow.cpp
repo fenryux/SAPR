@@ -5,9 +5,9 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
-#define HEIGHT 45
-#define WIDTH 60
-#define SPACE_AMOUNT 30
+const double HEIGHT = 45;
+const double WIDTH = 60;
+const double SPACE_AMOUNT = 30;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -920,7 +920,13 @@ void MainWindow::open(){
         ui->sealingLeftCheckBox->setChecked(leftSupportFound);
         ui->sealingRightCheckBox->setChecked(rightSupportFound);
     }
-
+    ui->tabWidget->setTabVisible(1,false);
+    ui->NXCheckBox->setChecked(false);
+    ui->UXCheckBox->setChecked(false);
+    ui->SigmaCheckBox->setChecked(false);
+    resultNXList.clear();
+    resultUXList.clear();
+    resultSigmaXList.clear();
     file.close();
 }
 
@@ -937,7 +943,6 @@ void MainWindow::on_NXCheckBox_stateChanged(int arg1)
     else for(auto i: NXGraphicItems)
         i->hide();
 }
-
 
 void MainWindow::on_UXCheckBox_stateChanged(int arg1)
 {
