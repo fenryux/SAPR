@@ -17,9 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     QAction *actionAbout = ui->menubar->addAction("About");
     ui->tabWidget->setTabVisible(1,false);
+    ui->tabWidget->setTabVisible(2,false);
     ui->menuPostprocessorParameters->actions().at(0)->setCheckable(true);
     ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
-    ui->menuPostprocessorParameters->actions().at(2)->setCheckable(true);
     ui->menuPostprocessorParameters->setEnabled(false);
 
     graphicScene = new QGraphicsScene;
@@ -77,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->sealingLeftCheckBox, &QCheckBox::stateChanged, this, &MainWindow::leftSupportValueChanged);
     connect(ui->sealingRightCheckBox, &QCheckBox::stateChanged, this, &MainWindow::rightSupportValueChanged);
     connect(ui->calcPushButton, &QPushButton::pressed, this, &MainWindow::calculate);
+    connect(ui->actionTableView, &QAction::triggered, this, &MainWindow::ppShowTableView);
 }
 
 MainWindow::~MainWindow()
@@ -419,6 +420,57 @@ void MainWindow::configurePostprocessor(){
         item->setFlags(Qt::ItemIsEnabled);
         ui->deltaResultTableWidget->setItem(i,0,item);
     }
+
+    // заполнение таблицы Nx
+    short maxSize = 0;
+    for(int i = 0; i < resultNXList.size();i++){
+        if(resultNXList[i].size() > maxSize)
+            maxSize = resultNXList[i].size();
+    }
+    ui->resultNxTableWidget->setRowCount(maxSize);
+    ui->resultNxTableWidget->setColumnCount(barsAmount);
+    ui->resultNxTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    for(int i = 0; i < barsAmount; i++){
+        for(int j = 0; j < resultNXList[i].size();j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultNXList[i][j]));
+            if(resultNXList[i][j] > resultSigmaXList[i][j])
+                item->setBackground(Qt::red);
+            else item->setBackground(Qt::white);
+            item->setTextAlignment(Qt::AlignCenter);
+            item->setFlags(Qt::NoItemFlags);
+            item->setFlags(Qt::ItemIsEnabled);
+            ui->resultNxTableWidget->setItem(j,i,item);
+        }
+    }
+    // заполнение таблицы Ux
+    ui->resultUxTableWidget->setRowCount(maxSize);
+    ui->resultUxTableWidget->setColumnCount(barsAmount);
+    ui->resultUxTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    for(int i = 0; i < barsAmount; i++){
+        for(int j = 0; j < resultUXList[i].size();j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultUXList[i][j]));
+            item->setBackground(Qt::white);
+            item->setTextAlignment(Qt::AlignCenter);
+            item->setFlags(Qt::NoItemFlags);
+            item->setFlags(Qt::ItemIsEnabled);
+            ui->resultUxTableWidget->setItem(j,i,item);
+        }
+    }
+    // заполнение таблицы SigmaX
+    ui->resultSigmaTableWidget->setRowCount(maxSize);
+    ui->resultSigmaTableWidget->setColumnCount(barsAmount);
+    ui->resultSigmaTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    for(int i = 0; i < barsAmount; i++){
+        for(int j = 0; j < resultSigmaXList[i].size();j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultSigmaXList[i][j]));
+            item->setBackground(Qt::white);
+            item->setTextAlignment(Qt::AlignCenter);
+            item->setFlags(Qt::NoItemFlags);
+            item->setFlags(Qt::ItemIsEnabled);
+            ui->resultSigmaTableWidget->setItem(j,i,item);
+        }
+    }
+
     ui->NXCheckBox->setChecked(true);
     drawPostprocessor();
     ui->tabWidget->setCurrentIndex(1);
@@ -954,7 +1006,6 @@ void MainWindow::on_UXCheckBox_stateChanged(int arg1)
         i->hide();
 }
 
-
 void MainWindow::on_SigmaCheckBox_stateChanged(int arg1)
 {
     if(ui->SigmaCheckBox->isChecked()){
@@ -963,4 +1014,11 @@ void MainWindow::on_SigmaCheckBox_stateChanged(int arg1)
     }
     else for(auto i: SigmaGraphicItems)
         i->hide();
+}
+
+void MainWindow::ppShowTableView(){
+    if(ui->actionTableView->isChecked()){
+        ui->tabWidget->setTabVisible(2,true);
+    }
+    else ui->tabWidget->setTabVisible(2, false);
 }

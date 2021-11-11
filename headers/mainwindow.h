@@ -22,6 +22,8 @@ private slots:
     void forceTableCellValueChanged(QTableWidgetItem *item);
     void leftSupportValueChanged(const int& state);
     void rightSupportValueChanged(const int& state);
+    void ppShowTableView();
+//    void ppShowGraphicView(int arg1);
     void draw();
     void calculate();
     void saveAs();
@@ -30,9 +32,7 @@ private slots:
     void exit();
 
     void on_NXCheckBox_stateChanged(int arg1);
-
     void on_UXCheckBox_stateChanged(int arg1);
-
     void on_SigmaCheckBox_stateChanged(int arg1);
 
 protected:
