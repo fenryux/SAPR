@@ -27,6 +27,9 @@ private slots:
     void draw();
     void calculate();
     void saveAs();
+    void save();
+    void saveResult();
+    void newFile();
     void open();
     void about();
     void exit();
@@ -49,6 +52,9 @@ private:
     QList<double> Gauss(QList<QList<double>> &matrixA, QList<double> &matrixB);
     void configurePostprocessor();
     void drawPostprocessor();
+    void saveEpuresAsPictures(bool NX, bool UX, bool Sigma);
+    void hidePostProcessor();
+    void resetPostProcessor();
 
     Ui::MainWindow *ui;
     QString currentFile;

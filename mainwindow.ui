@@ -481,7 +481,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="preprocessor">
      <property name="autoFillBackground">
@@ -1007,8 +1007,11 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="actionSave_as"/>
+    <addaction name="actionNewFile"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_as"/>
+    <addaction name="actionSaveResult"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -1017,7 +1020,6 @@
      <string>Параметры</string>
     </property>
     <addaction name="actionTableView"/>
-    <addaction name="actionShowAsGraph"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuPostprocessorParameters"/>
@@ -1025,7 +1027,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_as">
    <property name="text">
-    <string>Сохранить как проект</string>
+    <string>Сохранить как...</string>
    </property>
   </action>
   <action name="actionSave_project_file">
@@ -1066,6 +1068,21 @@
   <action name="actionShowAsGraph">
    <property name="text">
     <string>Отобразить результаты графиками</string>
+   </property>
+  </action>
+  <action name="actionSaveResult">
+   <property name="text">
+    <string>Сохранить результат</string>
+   </property>
+  </action>
+  <action name="actionNewFile">
+   <property name="text">
+    <string>Новый файл</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Сохранить</string>
    </property>
   </action>
  </widget>

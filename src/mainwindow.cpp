@@ -15,12 +15,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    currentFile = "PLACEHOLDER_TEXT";
+
     QAction *actionAbout = ui->menubar->addAction("About");
     ui->tabWidget->setTabVisible(1,false);
     ui->tabWidget->setTabVisible(2,false);
     ui->menuPostprocessorParameters->actions().at(0)->setCheckable(true);
     ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
     ui->menuPostprocessorParameters->setEnabled(false);
+    ui->menuFile->actions().at(4)->setEnabled(false);
 
     graphicScene = new QGraphicsScene;
     postprocessorGraphicScene = new QGraphicsScene;
@@ -78,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->sealingRightCheckBox, &QCheckBox::stateChanged, this, &MainWindow::rightSupportValueChanged);
     connect(ui->calcPushButton, &QPushButton::pressed, this, &MainWindow::calculate);
     connect(ui->actionTableView, &QAction::triggered, this, &MainWindow::ppShowTableView);
+    connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(ui->actionSaveResult, &QAction::triggered, this, &MainWindow::saveResult);
 }
 
 MainWindow::~MainWindow()
@@ -374,6 +380,7 @@ void MainWindow::calculate(){
         // конец расчетов в процессоре
         ui->tabWidget->setTabVisible(1,true);
         ui->menuPostprocessorParameters->setEnabled(true);
+        ui->menuFile->actions().at(4)->setEnabled(true);
         configurePostprocessor();
     }
 }
@@ -856,6 +863,206 @@ void MainWindow::saveAs(){
    else text += "0\n";
    out << text;
    file.close();
+}
+
+void MainWindow::save(){
+    QString fileName = "Construction.txt";
+    if(currentFile != "PLACEHOLDER_TEXT"){
+        fileName = currentFile;
+    }
+    QFile file(fileName);
+    if(!file.open(QFile::WriteOnly|QFile::Text)){
+        QMessageBox::warning(this, "Ошибка!","Невозможно открыть файл: " + file.errorString());
+        return;
+    }
+
+    QTextStream out(&file);
+    QString text;
+    out << "========= Стержни =========\n";
+    out << "Количество стержней: " << QString::number(barsAmount) << " \n";
+    out << "=== L === A === σ === E ===\n";
+    // добавление информации о стержнях
+   for(int i = 0; i < barsAmount; i++){
+       text += "=" + QString::number(i+1);
+       for(int j = 0; j < 4; j++){
+            text += ' ' + ui->barTableWidget->item(i,j)->text();
+       }
+       text += '\n';
+   }
+   //добавление информации о нагрузках
+   text += "========= Нагрузки =========\n";
+   text += "======== F ======= q =======\n";
+   for(int i = 0; i < barsAmount+1; i++){
+       text += "=" + QString::number(i+1);
+       text += ' ' + ui->forceFTableWidget->item(i,0)->text();
+       if(i < barsAmount){
+           text += ' ' + ui->forceQTableWidget->item(i,0)->text();
+       }
+       text += '\n';
+   }
+   text += "========= Заделки =========\n";
+   if(ui->sealingLeftCheckBox->isChecked())
+       text += "1 ";
+   else text += "0 ";
+   if(ui->sealingRightCheckBox->isChecked())
+       text += "1\n";
+   else text += "0\n";
+   out << text;
+   file.close();
+}
+
+void MainWindow::saveResult(){
+    QString fileName = "Construction_result.txt";
+    if(currentFile != "PLACEHOLDER_TEXT"){
+        int dotPos = currentFile.indexOf(".");
+        fileName = currentFile.insert(dotPos,"_result");
+    }
+    QFile file(fileName);
+    if(!file.open(QFile::WriteOnly|QFile::Text)){
+        QMessageBox::warning(this, "Ошибка!","Невозможно открыть файл: " + file.errorString());
+        return;
+    }
+    QTextStream out(&file);
+    QString text;
+
+    text += "=== Итоговая матрица A ===\n";
+    for(int i = 0; i < resultAList.size();i++){
+        for(int j = 0; j < resultAList[i].size();j++){
+            text += ' ' + QString::number(resultAList[i][j]);
+        }
+        text += '\n';
+    }
+    text += "=== Итоговая матрица b ===\n";
+    for(int i = 0; i < resultBList.size(); i++){
+        text += ' ' + QString::number(resultBList[i]);
+    }
+    text += '\n';
+    text += "=== Итоговая матрица delta ===\n";
+    for(int i = 0; i < resultDeltaList.size(); i++){
+        text += ' ' + QString::number(resultDeltaList[i]);
+    }
+    text += '\n';
+    text += "=== Nx ===\n";
+    for(int i = 0; i < barsAmount; i++){
+        text += "Стержень " + QString::number(i+1) + ":\n";
+        text += " L:= ";
+        for(int j = 0; j < resultNXList[i].size();j++)
+            text += QString::number(((double)j+1)/resultNXList[i].size()) + "L ";
+        text += '\n';
+        text += " Nx:= ";
+        for(int j = 0; j < resultNXList[i].size();j++)
+            text += QString::number(resultNXList[i][j]) + ' ';
+        text += '\n';
+    }
+    text += "=== Ux ===\n";
+    for(int i = 0; i < barsAmount; i++){
+        text += "Стержень " + QString::number(i+1) + ":\n";
+        text += " L:= ";
+        for(int j = 0; j < resultUXList[i].size();j++)
+            text += QString::number(((double)j+1)/resultUXList[i].size()) + "L ";
+        text += '\n';
+        text += " Ux:= ";
+        for(int j = 0; j < resultUXList[i].size();j++)
+            text += QString::number(resultUXList[i][j]) + ' ';
+        text += '\n';
+    }
+    text += "=== SigmaX ===\n";
+    for(int i = 0; i < barsAmount; i++){
+        text += "Стержень " + QString::number(i+1) + ":\n";
+        text += " L:= ";
+        for(int j = 0; j < resultSigmaXList[i].size();j++)
+            text += QString::number(((double)j+1)/resultSigmaXList[i].size()) + "L ";
+        text += '\n';
+        text += " SigmaX:= ";
+        for(int j = 0; j < resultSigmaXList[i].size();j++)
+            text += QString::number(resultSigmaXList[i][j]) + ' ';
+        text += '\n';
+    }
+    out << text;
+    file.close();
+    saveEpuresAsPictures(ui->NXCheckBox->isChecked(), ui->UXCheckBox->isChecked(), ui->SigmaCheckBox->isChecked());
+}
+
+void MainWindow::saveEpuresAsPictures(bool NX, bool UX, bool Sigma){
+    ui->NXCheckBox->setChecked(true);
+    ui->UXCheckBox->setChecked(false);
+    ui->SigmaCheckBox->setChecked(false);
+
+    for(int i = 0; i < 3; i++){
+        if(i == 1){
+            ui->NXCheckBox->setChecked(false);
+            ui->UXCheckBox->setChecked(true);
+        }
+        else if(i == 2){
+            ui->UXCheckBox->setChecked(false);
+            ui->SigmaCheckBox->setChecked(true);
+        }
+
+        ui->epuresGraphicsView->scene()->clearSelection();                                                      // Selections would also render to the file
+        ui->epuresGraphicsView->scene()->setSceneRect(ui->epuresGraphicsView->scene()->itemsBoundingRect());    // Re-shrink the scene to it's bounding contents
+        QImage image(ui->epuresGraphicsView->scene()->sceneRect().size().toSize(), QImage::Format_ARGB32);      // Create the image with the exact size of the shrunk scene
+        image.fill(Qt::transparent);                                                                            // Start all pixels transparent
+
+        QPainter painter(&image);
+        ui->epuresGraphicsView->scene()->render(&painter);
+        switch(i){
+        case 0:
+            image.save("NX.png");
+            break;
+        case 1:
+            image.save("UX.png");
+            break;
+        case 2:
+            image.save("SigmaX.png");
+            break;
+        }
+    }
+    ui->NXCheckBox->setChecked(NX);
+    ui->UXCheckBox->setChecked(UX);
+    ui->SigmaCheckBox->setChecked(Sigma);
+}
+
+void MainWindow::hidePostProcessor(){
+    ui->postprocessorTableView->hide();
+    ui->postprocessor->hide();
+    ui->menuPostprocessorParameters->setEnabled(false);
+}
+
+void MainWindow::resetPostProcessor(){
+    resultNXList.clear();
+    resultUXList.clear();
+    resultSigmaXList.clear();
+    resultAList.clear();
+    resultBList.clear();
+    resultDeltaList.clear();
+    ui->epuresGraphicsView->scene()->clear();
+    NXGraphicItems.clear();
+    UXGraphicItems.clear();
+    SigmaGraphicItems.clear();
+    ui->actionTableView->setChecked(false);
+}
+
+void MainWindow::newFile(){
+    QMessageBox::StandardButton userReply;
+    userReply = QMessageBox::question(this, "Уведомление","Создать новую конструкцию?", QMessageBox::Yes | QMessageBox::No);
+    if(userReply == QMessageBox::Yes){
+        currentFile = "PLACEHOLDER_TEXT";
+        clearDataTables();
+        ui->sealingLeftCheckBox->setChecked(false);
+        ui->sealingRightCheckBox->setChecked(false);
+        resultAList.clear();
+        resultBList.clear();
+        resultDeltaList.clear();
+        resultNXList.clear();
+        resultUXList.clear();
+        resultSigmaXList.clear();
+        ui->epuresGraphicsView->scene()->clear();
+        ui->tabWidget->setTabVisible(1, false);
+        ui->tabWidget->setTabVisible(2, false);
+        ui->actionSaveResult->setEnabled(false);
+        ui->actionTableView->setChecked(false);
+        ui->menuPostprocessorParameters->setEnabled(false);
+    }
 }
 
 void MainWindow::open(){
