@@ -20,10 +20,10 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *actionAbout = ui->menubar->addAction("About");
     ui->tabWidget->setTabVisible(1,false);
     ui->tabWidget->setTabVisible(2,false);
-    ui->menuPostprocessorParameters->actions().at(0)->setCheckable(true);
-    ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
+    ui->actionTableView->setCheckable(true);
+//    ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
     ui->menuPostprocessorParameters->setEnabled(false);
-    ui->menuFile->actions().at(4)->setEnabled(false);
+    ui->actionSaveResult->setEnabled(false);
 
     graphicScene = new QGraphicsScene;
     postprocessorGraphicScene = new QGraphicsScene;
@@ -361,7 +361,9 @@ void MainWindow::calculate(){
             for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
                 double UX = resultDeltaList[i] +
                         (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble() *
-                        (resultDeltaList[i+1] - resultDeltaList[i]) + (forceQList[i]->text().toDouble() * std::pow(barsList[i][0]->text().toDouble(),2))/(2*barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble())*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2)))*
+                        (resultDeltaList[i+1] - resultDeltaList[i]) + (forceQList[i]->text().toDouble() * std::pow(barsList[i][0]->text().toDouble(),2))/
+                        (2*barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble())*(j * barsList[i][0]->text().toDouble()/
+                        (SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2)))*
                         (1 - (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
                 UXPerSpaceList.push_back(UX);
             }
@@ -440,9 +442,7 @@ void MainWindow::configurePostprocessor(){
     for(int i = 0; i < barsAmount; i++){
         for(int j = 0; j < resultNXList[i].size();j++){
             QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultNXList[i][j]));
-            if(resultNXList[i][j] > resultSigmaXList[i][j])
-                item->setBackground(Qt::red);
-            else item->setBackground(Qt::white);
+            item->setBackground(Qt::white);
             item->setTextAlignment(Qt::AlignCenter);
             item->setFlags(Qt::NoItemFlags);
             item->setFlags(Qt::ItemIsEnabled);
@@ -470,7 +470,9 @@ void MainWindow::configurePostprocessor(){
     for(int i = 0; i < barsAmount; i++){
         for(int j = 0; j < resultSigmaXList[i].size();j++){
             QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultSigmaXList[i][j]));
-            item->setBackground(Qt::white);
+            if(abs(resultSigmaXList[i][j]) > barsList[i][2]->text().toDouble())
+                item->setBackground(Qt::red);
+            else item->setBackground(Qt::white);
             item->setTextAlignment(Qt::AlignCenter);
             item->setFlags(Qt::NoItemFlags);
             item->setFlags(Qt::ItemIsEnabled);
@@ -672,8 +674,6 @@ void MainWindow::drawPostprocessor(){
     UXGraphicItems.clear();
     SigmaGraphicItems.clear();
 
-    QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(-1000, 0, 1000, 0, QPen(Qt::DashDotLine));
-    lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
 
     double currentBar = 0;
     double position = 0;
@@ -686,11 +686,14 @@ void MainWindow::drawPostprocessor(){
             position += 3;
             NXGraphicItems.push_back(lineItem);
         }
-        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultNXList[currentBar][0]*15,position,0 - resultNXList[currentBar][resultNXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
-        NXGraphicItems.push_back(lineItem);
+//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultNXList[currentBar][0]*15,position,0 - resultNXList[currentBar][resultNXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
+//        NXGraphicItems.push_back(lineItem);
         currentBar++;
         barStartPosition = position;
     }
+    // отрисовка оси
+    QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(-10, 0, NXGraphicItems[NXGraphicItems.size()-1]->x(), 0, QPen(Qt::DashDotLine));
+    lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
     // отрисовка Ux
     position = 0;
     currentBar = 0;
