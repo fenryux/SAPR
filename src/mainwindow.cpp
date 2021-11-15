@@ -1,6 +1,5 @@
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
-#include "ui_resultwindow.h"
 
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -21,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget->setTabVisible(1,false);
     ui->tabWidget->setTabVisible(2,false);
     ui->actionTableView->setCheckable(true);
-//    ui->menuPostprocessorParameters->actions().at(1)->setCheckable(true);
     ui->menuPostprocessorParameters->setEnabled(false);
     ui->actionSaveResult->setEnabled(false);
 
@@ -674,10 +672,8 @@ void MainWindow::drawPostprocessor(){
     UXGraphicItems.clear();
     SigmaGraphicItems.clear();
 
-
     double currentBar = 0;
     double position = 0;
-    double barStartPosition = position;
     // отрисовка Nx
     while(currentBar != barsList.size())
     {
@@ -686,18 +682,14 @@ void MainWindow::drawPostprocessor(){
             position += 3;
             NXGraphicItems.push_back(lineItem);
         }
-//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultNXList[currentBar][0]*15,position,0 - resultNXList[currentBar][resultNXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
-//        NXGraphicItems.push_back(lineItem);
         currentBar++;
-        barStartPosition = position;
     }
     // отрисовка оси
-    QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(-10, 0, NXGraphicItems[NXGraphicItems.size()-1]->x(), 0, QPen(Qt::DashDotLine));
+    QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(NXGraphicItems[0]->x()-10, 0, position+10, 0, QPen(Qt::DashDotLine));
     lineItem->setFlags(QGraphicsItem::ItemStacksBehindParent);
     // отрисовка Ux
     position = 0;
     currentBar = 0;
-    barStartPosition = position;
     while(currentBar != barsList.size())
     {
         for(int j = 0; j < resultUXList[currentBar].size(); j++){
@@ -706,15 +698,11 @@ void MainWindow::drawPostprocessor(){
             UXGraphicItems.push_back(lineItem);
             lineItem->hide();
         }
-//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultUXList[currentBar][0]*15,position,0 - resultUXList[currentBar][resultUXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
-//        UXGraphicItems.push_back(lineItem);
         currentBar++;
-        barStartPosition = position;
     }
     // отрисовка sigmaX
     position = 0;
     currentBar = 0;
-    barStartPosition = position;
     while(currentBar != barsList.size())
     {
         for(int j = 0; j < resultSigmaXList[currentBar].size(); j++){
@@ -723,11 +711,9 @@ void MainWindow::drawPostprocessor(){
             SigmaGraphicItems.push_back(lineItem);
             lineItem->hide();
         }
-//        QGraphicsLineItem* lineItem = postprocessorGraphicScene->addLine(barStartPosition,0 - resultUXList[currentBar][0]*15,position,0 - resultUXList[currentBar][resultUXList[currentBar].size()-1]*15,QPen(Qt::blue,2));
-//        UXGraphicItems.push_back(lineItem);
         currentBar++;
-        barStartPosition = position;
     }
+    ui->epuresGraphicsView->centerOn(QPointF(position/2,0));
 }
 // масштабирование рисунка. Автор: Марк Бобровских
 void MainWindow::scaleView(qreal scaleFactor)
