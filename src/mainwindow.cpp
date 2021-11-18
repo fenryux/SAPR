@@ -259,7 +259,8 @@ bool MainWindow::isForceTableValid(const QTableWidget* table){
 }
 
 void MainWindow::calculate(){
-    if(!isBarTableValid() || !isForceTableValid(ui->forceFTableWidget) || !isForceTableValid(ui->forceQTableWidget)){
+    if(!isBarTableValid() || !isForceTableValid(ui->forceFTableWidget) || !isForceTableValid(ui->forceQTableWidget) ||
+            (ui->sealingLeftCheckBox->isChecked() == false && ui->sealingRightCheckBox->isChecked() == false)){
         QMessageBox::warning(this,"Warning!","Некорректные данные!");
         return;
     }
@@ -282,32 +283,31 @@ void MainWindow::calculate(){
     // заполнение матрицы A
     for(int i = 0; i < barsAmount + 1; i++){
         if(i == 0){
-            if(!ui->sealingLeftCheckBox->isChecked()){
-                AList[i][i] = (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
-                AList[i][i+1] = -1 * AList[i][i];
-                AList[i+1][i] = -1 * AList[i][i];
-            }else{
-                AList[i][i] = 1;
-                AList[i][i+1] = 0;
-                AList[i+1][i] = 0;
-            }
+            AList[i][i] = (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
+            AList[i][i+1] = -1 * AList[i][i];
+            AList[i+1][i] = -1 * AList[i][i];
         }
         else if(i == barsAmount){
-            if(!ui->sealingRightCheckBox->isChecked()){
-                AList[i][i] = (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
-                AList[i][i-1] = -1 * (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
-                AList[i-1][i] = -1 * (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
-            }else{
-                AList[i][i] = 1;
-                AList[i][i-1] = 0;
-                AList[i-1][i] = 0;
-            }
+            AList[i][i] = (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
+            AList[i][i-1] = -1 * (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
+            AList[i-1][i] = -1 * (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble();
         }
         else{
-            AList[i][i] = (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble() + (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
+            AList[i][i] = (barsList[i-1][3]->text().toDouble() * barsList[i-1][1]->text().toDouble())/barsList[i-1][0]->text().toDouble() +
+                    (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
             AList[i][i+1] = -1 * (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
             AList[i+1][i] = -1 * (barsList[i][3]->text().toDouble() * barsList[i][1]->text().toDouble())/barsList[i][0]->text().toDouble();
         }
+    }
+    if(ui->sealingLeftCheckBox->isChecked()){
+        AList[0][0] = 1;
+        for(int i = 1; i < AList.size(); i++)
+            AList[0][i] = 0;
+    }
+    if(ui->sealingRightCheckBox->isChecked()){
+        AList[AList.size() - 1][AList.size() - 1] = 1;
+        for(int i = 0; i < AList.size() - 1; i++)
+            AList[AList.size() - 1][i] = 0;
     }
 
     //заполнение матрицы b
@@ -325,13 +325,8 @@ void MainWindow::calculate(){
                 bList[i] = 0;
         }
         else{
-//            qDebug() << "forceF[" << QString::number(i) << "]: " <<  forceFList[i]->text().toDouble();
-//            qDebug() << "forceQ[" << QString::number(i-1) << "]: " << forceQList[i-1]->text().toDouble();
-//            qDebug() << "bar[" << QString::number(i-1) << "] L: " << barsList[i-1][0]->text().toDouble();
-//            qDebug() << "forceQ[" << QString::number(i) << "]: " << forceQList[i]->text().toDouble();
-//            qDebug() << "bar[" << QString::number(i) << "] L: " << barsList[i][0]->text().toDouble();
-
-            bList[i] = forceFList[i]->text().toDouble() + (forceQList[i-1]->text().toDouble()*barsList[i-1][0]->text().toDouble())/2 + (forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble())/2;
+            bList[i] = forceFList[i]->text().toDouble() + (forceQList[i-1]->text().toDouble()*barsList[i-1][0]->text().toDouble())/2 +
+                    (forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble())/2;
         }
     }
 
@@ -346,7 +341,8 @@ void MainWindow::calculate(){
             QList<double> NXPerSpaceList;
             for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
                 double NX = barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble()/barsList[i][0]->text().toDouble()
-                        * (resultDeltaList[i+1] - resultDeltaList[i]) + forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble()/2*(1 - 2*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
+                        * (resultDeltaList[i+1] - resultDeltaList[i]) + forceQList[i]->text().toDouble()*barsList[i][0]->text().toDouble()/
+                        2*(1 - 2*(j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
                 NXPerSpaceList.push_back(NX);
             }
             resultNXList.push_back(NXPerSpaceList);
@@ -358,11 +354,11 @@ void MainWindow::calculate(){
             QList<double> UXPerSpaceList;
             for(int j = 0; j < SPACE_AMOUNT*barsList[i][0]->text().toDouble();j++){
                 double UX = resultDeltaList[i] +
-                        (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble() *
+                        ((j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble()) *
                         (resultDeltaList[i+1] - resultDeltaList[i]) + (forceQList[i]->text().toDouble() * std::pow(barsList[i][0]->text().toDouble(),2))/
                         (2*barsList[i][3]->text().toDouble()*barsList[i][1]->text().toDouble())*(j * barsList[i][0]->text().toDouble()/
-                        (SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2)))*
-                        (1 - (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*std::pow(barsList[i][0]->text().toDouble(),2))));
+                        (SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble()*
+                        (1 - (j * barsList[i][0]->text().toDouble()/(SPACE_AMOUNT*barsList[i][0]->text().toDouble()))/barsList[i][0]->text().toDouble());
                 UXPerSpaceList.push_back(UX);
             }
             resultUXList.push_back(UXPerSpaceList);
@@ -380,7 +376,7 @@ void MainWindow::calculate(){
         // конец расчетов в процессоре
         ui->tabWidget->setTabVisible(1,true);
         ui->menuPostprocessorParameters->setEnabled(true);
-        ui->menuFile->actions().at(4)->setEnabled(true);
+        ui->actionSaveResult->setEnabled(true);
         configurePostprocessor();
     }
 }
@@ -435,54 +431,92 @@ void MainWindow::configurePostprocessor(){
             maxSize = resultNXList[i].size();
     }
     ui->resultNxTableWidget->setRowCount(maxSize);
-    ui->resultNxTableWidget->setColumnCount(barsAmount);
+    ui->resultNxTableWidget->setColumnCount(barsAmount*2);
     ui->resultNxTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    for(int i = 0; i < barsAmount; i++){
-        for(int j = 0; j < resultNXList[i].size();j++){
-            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultNXList[i][j]));
+    ui->resultNxTableWidget->verticalHeader()->hide();
+    int currentBar = 0;
+    for(int i = 0; i < ui->resultNxTableWidget->columnCount(); i += 2){
+        QTableWidgetItem* itemLHeader = new QTableWidgetItem("L");
+        QTableWidgetItem* itemHeader = new QTableWidgetItem(QString::number(currentBar+1));
+        ui->resultNxTableWidget->setHorizontalHeaderItem(i, itemLHeader);
+        ui->resultNxTableWidget->setHorizontalHeaderItem(i+1, itemHeader);
+        for(int j = 0; j < resultNXList[currentBar].size();j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultNXList[currentBar][j]));
+            QTableWidgetItem* itemL = new QTableWidgetItem(QString::number(((double)j+1)/resultNXList[currentBar].size()) + "L");
             item->setBackground(Qt::white);
             item->setTextAlignment(Qt::AlignCenter);
             item->setFlags(Qt::NoItemFlags);
             item->setFlags(Qt::ItemIsEnabled);
-            ui->resultNxTableWidget->setItem(j,i,item);
+            itemL->setFlags(Qt::NoItemFlags);
+            itemL->setFlags(Qt::ItemIsEnabled);
+            itemL->setTextAlignment(Qt::AlignCenter);
+            ui->resultNxTableWidget->setItem(j,i+1,item);
+            ui->resultNxTableWidget->setItem(j,i,itemL);
         }
+        currentBar++;
     }
+    currentBar = 0;
     // заполнение таблицы Ux
     ui->resultUxTableWidget->setRowCount(maxSize);
-    ui->resultUxTableWidget->setColumnCount(barsAmount);
+    ui->resultUxTableWidget->setColumnCount(barsAmount*2);
     ui->resultUxTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    for(int i = 0; i < barsAmount; i++){
-        for(int j = 0; j < resultUXList[i].size();j++){
-            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultUXList[i][j]));
+    ui->resultUxTableWidget->verticalHeader()->hide();
+    for(int i = 0; i < ui->resultUxTableWidget->columnCount(); i += 2){
+        QTableWidgetItem* itemLHeader = new QTableWidgetItem("L");
+        QTableWidgetItem* itemHeader = new QTableWidgetItem(QString::number(currentBar+1));
+        ui->resultUxTableWidget->setHorizontalHeaderItem(i, itemLHeader);
+        ui->resultUxTableWidget->setHorizontalHeaderItem(i+1, itemHeader);
+        for(int j = 0; j < resultUXList[currentBar].size(); j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultUXList[currentBar][j]));
+            QTableWidgetItem* itemL = new QTableWidgetItem(QString::number(((double)j+1)/resultUXList[currentBar].size()) + "L");
             item->setBackground(Qt::white);
             item->setTextAlignment(Qt::AlignCenter);
             item->setFlags(Qt::NoItemFlags);
             item->setFlags(Qt::ItemIsEnabled);
-            ui->resultUxTableWidget->setItem(j,i,item);
+            itemL->setFlags(Qt::NoItemFlags);
+            itemL->setFlags(Qt::ItemIsEnabled);
+            itemL->setTextAlignment(Qt::AlignCenter);
+            ui->resultUxTableWidget->setItem(j,i+1,item);
+            ui->resultUxTableWidget->setItem(j,i,itemL);
         }
+        currentBar++;
     }
+    currentBar = 0;
     // заполнение таблицы SigmaX
     ui->resultSigmaTableWidget->setRowCount(maxSize);
-    ui->resultSigmaTableWidget->setColumnCount(barsAmount);
+    ui->resultSigmaTableWidget->setColumnCount(barsAmount*2);
     ui->resultSigmaTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    for(int i = 0; i < barsAmount; i++){
-        for(int j = 0; j < resultSigmaXList[i].size();j++){
-            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultSigmaXList[i][j]));
-            if(abs(resultSigmaXList[i][j]) > barsList[i][2]->text().toDouble())
+    ui->resultSigmaTableWidget->verticalHeader()->hide();
+    for(int i = 0; i < ui->resultSigmaTableWidget->columnCount(); i += 2){
+        QTableWidgetItem* itemLHeader = new QTableWidgetItem("L");
+        QTableWidgetItem* itemHeader = new QTableWidgetItem(QString::number(currentBar+1));
+        ui->resultSigmaTableWidget->setHorizontalHeaderItem(i, itemLHeader);
+        ui->resultSigmaTableWidget->setHorizontalHeaderItem(i+1, itemHeader);
+        for(int j = 0; j < resultSigmaXList[currentBar].size();j++){
+            QTableWidgetItem* item = new QTableWidgetItem(QString::number(resultSigmaXList[currentBar][j]));
+            QTableWidgetItem* itemL = new QTableWidgetItem(QString::number(((double)j+1)/resultSigmaXList[currentBar].size()) + "L");
+            if(abs(resultSigmaXList[currentBar][j]) > barsList[currentBar][2]->text().toDouble())
                 item->setBackground(Qt::red);
             else item->setBackground(Qt::white);
             item->setTextAlignment(Qt::AlignCenter);
             item->setFlags(Qt::NoItemFlags);
             item->setFlags(Qt::ItemIsEnabled);
-            ui->resultSigmaTableWidget->setItem(j,i,item);
+            itemL->setFlags(Qt::NoItemFlags);
+            itemL->setFlags(Qt::ItemIsEnabled);
+            itemL->setTextAlignment(Qt::AlignCenter);
+            ui->resultSigmaTableWidget->setItem(j,i+1,item);
+            ui->resultSigmaTableWidget->setItem(j,i,itemL);
         }
+        currentBar++;
     }
 
     ui->NXCheckBox->setChecked(true);
+    ui->UXCheckBox->setChecked(false);
+    ui->SigmaCheckBox->setChecked(false);
     drawPostprocessor();
     ui->tabWidget->setCurrentIndex(1);
 }
-// позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
+// не совсем оригинальная разработка :)
 QList<double> MainWindow::Gauss(QList<QList<double>> &matrixA, QList<double> &matrixB){
     QList<double> result;
     int k = 0;
@@ -491,7 +525,7 @@ QList<double> MainWindow::Gauss(QList<QList<double>> &matrixA, QList<double> &ma
     result.resize(matrixA.size());
 
     for(int i = 0; i < result.size(); i++)
-        result[i] = 0;
+        result[i] = 0.0;
 
     // прямой ход
     while(k < matrixA.size()){
@@ -542,7 +576,7 @@ QList<double> MainWindow::Gauss(QList<QList<double>> &matrixA, QList<double> &ma
 
     return result;
 }
-// P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях валидны
+// P.S. Отрисовка происходит с учетом того факта, что все данные о стержнях корректны
 void MainWindow::draw(){
     graphicScene->clear();
 
@@ -713,13 +747,18 @@ void MainWindow::drawPostprocessor(){
         }
         currentBar++;
     }
-    ui->epuresGraphicsView->centerOn(QPointF(position/2,0));
+    ui->epuresGraphicsView->scene()->clearSelection();
+    ui->epuresGraphicsView->scene()->setSceneRect(ui->epuresGraphicsView->scene()->itemsBoundingRect());
+    ui->epuresGraphicsView->centerOn(NXGraphicItems[NXGraphicItems.size()/2]);
 }
 // масштабирование рисунка. Автор: Марк Бобровских
 void MainWindow::scaleView(qreal scaleFactor)
 {
     qreal factor = ui->graphicsView->transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
     if (factor < 0.5 || factor > 5)
+        return;
+
+    if(ui->tabWidget->currentIndex() == 1 || ui->tabWidget->currentIndex() == 2)
         return;
 
     ui->graphicsView->scale(scaleFactor, scaleFactor);
@@ -987,13 +1026,14 @@ void MainWindow::saveEpuresAsPictures(bool NX, bool UX, bool Sigma){
             ui->SigmaCheckBox->setChecked(true);
         }
 
-        ui->epuresGraphicsView->scene()->clearSelection();                                                      // Selections would also render to the file
-        ui->epuresGraphicsView->scene()->setSceneRect(ui->epuresGraphicsView->scene()->itemsBoundingRect());    // Re-shrink the scene to it's bounding contents
-        QImage image(ui->epuresGraphicsView->scene()->sceneRect().size().toSize(), QImage::Format_ARGB32);      // Create the image with the exact size of the shrunk scene
-        image.fill(Qt::transparent);                                                                            // Start all pixels transparent
+        ui->epuresGraphicsView->scene()->clearSelection();                                                      // Отчистка сцены от выделений (они входят в рендер)
+        ui->epuresGraphicsView->scene()->setSceneRect(ui->epuresGraphicsView->scene()->itemsBoundingRect());    // Сжатие сцены до ее bounding contents
+        QImage image(ui->epuresGraphicsView->scene()->sceneRect().size().toSize(), QImage::Format_ARGB32);      // Создание изображение по размерам сцены
+        image.fill(Qt::transparent);                                                                            // заполнение изображения "прозрачными" пикселями
 
         QPainter painter(&image);
-        ui->epuresGraphicsView->scene()->render(&painter);
+        ui->epuresGraphicsView->scene()->render(&painter);                                                      // рендер сцены
+
         switch(i){
         case 0:
             image.save("NX.png");
@@ -1006,7 +1046,7 @@ void MainWindow::saveEpuresAsPictures(bool NX, bool UX, bool Sigma){
             break;
         }
     }
-    ui->NXCheckBox->setChecked(NX);
+    ui->NXCheckBox->setChecked(NX);                                                                             // возращение значений изначально выбранных эпюр
     ui->UXCheckBox->setChecked(UX);
     ui->SigmaCheckBox->setChecked(Sigma);
 }
