@@ -619,7 +619,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Посчитать</string>
+       <string>Расчёт</string>
       </property>
      </widget>
      <widget class="QTableWidget" name="forceQTableWidget">

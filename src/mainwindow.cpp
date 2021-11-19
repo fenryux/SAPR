@@ -301,13 +301,17 @@ void MainWindow::calculate(){
     }
     if(ui->sealingLeftCheckBox->isChecked()){
         AList[0][0] = 1;
-        for(int i = 1; i < AList.size(); i++)
+        for(int i = 1; i < AList.size(); i++){
             AList[0][i] = 0;
+            AList[i][0] = 0;
+        }
     }
     if(ui->sealingRightCheckBox->isChecked()){
         AList[AList.size() - 1][AList.size() - 1] = 1;
-        for(int i = 0; i < AList.size() - 1; i++)
+        for(int i = 0; i < AList.size() - 1; i++){
             AList[AList.size() - 1][i] = 0;
+            AList[i][AList.size()-1] = 0;
+        }
     }
 
     //заполнение матрицы b
